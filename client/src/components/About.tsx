@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { teamMembers } from '../constants/index'; // Import team members data
 import styles from './About.module.css'; // Import the CSS module for styling
