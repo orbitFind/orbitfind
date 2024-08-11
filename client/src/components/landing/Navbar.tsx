@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { styles } from "../styles";
-import { navLinks } from "../constants";
-import { menu, close } from "../assets";
+import { styles } from "@/styles";
+import { navLinks } from "@/constants";
+import { menu, close } from "@/assets";
 
 const Navbar: React.FC = () => {
   const [toggle, setToggle] = useState(false);
@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
         <ul className="list-none hidden sm:flex flex-row gap-10">
           {navLinks.map((link) => (
             <div className="button" key={link.id}>
-              <li 
+              <li
                 className="text-[#E5E7EB] font-medium cursor-pointer"
               >
                 <a href={`#${link.id}`}>{link.title}</a>
@@ -43,9 +43,8 @@ const Navbar: React.FC = () => {
           />
 
           <div
-            className={`absolute top-0 h-screen w-2/3 bg-gradient-to-tl from-[#1B1A55]/10 to-[#535C91]/20 backdrop-blur-lg z-10 p-6 md:hidden smooth-transition ${
-              toggle ? "left-0" : "-left-full"
-            }`}
+            className={`absolute top-0 h-screen w-2/3 bg-gradient-to-tl from-[#1B1A55]/10 to-[#535C91]/20 backdrop-blur-lg z-10 p-6 md:hidden smooth-transition ${toggle ? "left-0" : "-left-full"
+              }`}
           >
             <ul className="list-none flex justify-end items-start flex-col gap-4">
               {navLinks.map((link) => (

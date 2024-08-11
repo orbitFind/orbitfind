@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaLinkedin, FaTiktok } from 'react-icons/fa';
-import styles from './Footer.module.css'; // Import the CSS module for styling
+import styles from '@/components/landing/Footer.module.css'; // Import the CSS module for styling
 
 const Footer: React.FC = () => {
   return (
