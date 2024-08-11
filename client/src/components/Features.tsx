@@ -48,7 +48,7 @@ const Features: React.FC = () => {
   }, [controls, inView]);
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} id='features'>
       <motion.h1
         ref={ref}
         initial="hidden"

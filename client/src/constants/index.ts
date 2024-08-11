@@ -32,12 +32,12 @@ const teamMembers = [
     desc: "Hey there! I'm Bartosz, a software developer from Poland. I'm super into AI engineering, and in my free time, I love playing chess, making music, and solving Rubik's cubes. Really excited to be part of this project!",
     linkedin: "https://www.linkedin.com/in/bartosz-glowacki-kcl/",
   },
-  // {
-  //   name: "Shami-uz Zaman",
-  //   img: "",
-  //   desc: "",
-  //   linkedin: "https://www.linkedin.com/in/shami-uz-zaman-b585431b6/",
-  // },
+  {
+    name: "Shami-uz Zaman",
+    img: "/shami.jpg" ,
+    desc: "Hey there! I'm Shami, an aspiring data analyst passionate about AI and Machine learning!! Also, an incoming Software engineering fellow at Headstarter AI!!",
+    linkedin: "https://www.linkedin.com/in/shami-uz-zaman-b585431b6/",
+  },
 ];
 
 export { teamMembers };

@@ -44,6 +44,7 @@ const WaitList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [city, setCity] = useState(''); // New state for city
   const { toast } = useToast(); // Initialize toast from Shadcn
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,13 +64,15 @@ const WaitList: React.FC = () => {
       // Add new document if email does not exist
       const docRef = await addDoc(collection(firestore, 'waitlist'), {
         email: email,
-        name: name
+        name: name,
+        city: city // Include city in the document
       });
 
       console.log('Document written with ID: ', docRef.id);
       toast({ title: 'Success!', description: 'Thank you! You have been added to the waitlist.' }); // Use Shadcn toast
       setEmail('');
       setName('');
+      setCity('');
       closeModal();
     } catch (error) {
       console.error('Error adding document: ', error);
@@ -93,9 +96,9 @@ const WaitList: React.FC = () => {
         <World globeConfig={globeConfig} data={globeData} />
       </div>
       <div className="content">
-        <h1 className="title">OrbitFind - Discover events in your orbit!</h1>
+        <h1 className="title">OrbitFind - Find exciting events in your orbit!</h1>
         <p className="description">
-          Be the first to know when our service is available. Enter your details to join our waitlist.
+        Level up your event discovery experience, earn badges, and create your own events for your community!        
         </p>
         <button
           onClick={openModal}
@@ -116,6 +119,9 @@ const WaitList: React.FC = () => {
               &times;
             </button>
             <h2 className="modal-title">Sign Up for the Waitlist</h2>
+            <p className="modal-description">
+              Sign up to our waitlist to get notified when we launch!
+            </p>
             <form onSubmit={handleSubmit} id="waitlist-form" className="waitlist-form">
               <div className="form-group">
                 <label htmlFor="name" className="form-label">Name</label>
@@ -139,12 +145,22 @@ const WaitList: React.FC = () => {
                   className="form-input"
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="city" className="form-label">City</label>
+                <input
+                  type="text"
+                  id="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
               <button type="submit" className="submit-button">Submit</button>
             </form>
           </div>
         </div>
       )}
-
       {/* Toast Container */}
       <div id="toast-container" className="toast-container"></div>
 
@@ -160,25 +176,25 @@ const WaitList: React.FC = () => {
             color: #E5E7EB;
             padding: 20px;
             text-align: center;
-            margin-top: 80px; /* Add margin-top to push content down */
             overflow: hidden; /* Prevent overflow caused by modal */
           }
 
           .globe-container {
-            width: 800px; /* Fixed width */
-            height: 600px; /* Fixed height */
+            width: 600px; /* Reduced width */
+            height: 450px; /* Reduced height */
             position: relative;
-            margin-bottom: 20px;
+            margin-top: 80px; /* Adjust this to move the globe down */
             overflow: hidden; /* Ensure content does not overflow */
             transition: opacity 0.3s ease, transform 0.3s ease;
           }
 
           .content {
             max-width: 600px;
+            margin-top: 20px; /* Adjust margin to avoid overlap with navbar */
           }
 
           .title {
-            font-size: 2rem;
+            font-size: 1.5rem; /* Reduced font size */
             font-weight: bold;
             margin-bottom: 10px;
             animation: fadeInUp 1s ease-out; /* Animation for title */
@@ -191,8 +207,8 @@ const WaitList: React.FC = () => {
           }
 
           .cta-button {
-            background-color: #1B1A55;
-            color: #E5E7EB;
+            background-color: #E5E7EB; /* Changed background color to off-white */
+            color: #1B1A55; /* Changed text color to dark to contrast with the new background */
             padding: 15px 30px;
             border: none;
             border-radius: 50px;
@@ -203,9 +219,10 @@ const WaitList: React.FC = () => {
           }
 
           .cta-button:hover {
-            background-color: #2a2a8e;
+            background-color: #d1d5db; /* Slightly darker shade of off-white for hover effect */
             box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.6);
           }
+
 
           /* Modal Styles */
           .modal-overlay {
@@ -236,6 +253,13 @@ const WaitList: React.FC = () => {
             font-weight: bold;
             color: #E5E7EB;
             margin-bottom: 15px;
+            text-align: center;
+          }
+
+          .modal-description {
+            font-size: 1rem;
+            color: #E5E7EB;
+            margin-bottom: 20px;
             text-align: center;
           }
 

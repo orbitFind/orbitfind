@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaLinkedin, FaInstagram } from 'react-icons/fa';
+import { FaLinkedin, FaTiktok } from 'react-icons/fa';
 import styles from './Footer.module.css'; // Import the CSS module for styling
 
 const Footer: React.FC = () => {
@@ -12,11 +12,11 @@ const Footer: React.FC = () => {
           <a href="#features" className={styles.footerLink}>Features</a>
         </div>
         <div className={styles.footerSocial}>
-          <a href="https://www.linkedin.com/company/orbitfind" className={styles.footerIcon} aria-label="LinkedIn">
+          <a href="https://www.linkedin.com/company/orbitfind" target="_blank" rel="noopener noreferrer" className={styles.footerIcon} aria-label="LinkedIn">
             <FaLinkedin />
           </a>
-          <a href="https://www.instagram.com/orbitfind" className={styles.footerIcon} aria-label="Instagram">
-            <FaInstagram />
+          <a href="https://www.tiktok.com/@orbitfind" target="_blank" rel="noopener noreferrer" className={styles.footerIcon} aria-label="Instagram">
+            <FaTiktok />
           </a>
         </div>
         <div className={styles.footerCopyright}>

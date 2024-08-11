@@ -1,5 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
-import { Navbar, WaitList, About, Features, Footer } from "./components";
+import { Navbar, WaitList, About, Features,Team, Footer } from "./components";
 import { Toaster } from "@/components/ui/toaster"; // Import the Toaster component
 import './globals.css';
 
@@ -15,6 +15,7 @@ const App = () => {
         <div className="relative z-0">
           <About />
           <Features />
+          <Team />
           <Footer />
         </div>
         <Toaster /> {/* Place the Toaster component here */}

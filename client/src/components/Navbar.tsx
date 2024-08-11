@@ -8,7 +8,7 @@ const Navbar: React.FC = () => {
   const [toggle, setToggle] = useState(false);
 
   return (
-    <nav className={`${styles.paddingX} w-full flex items-center py-5 fixed top-0 z-20 bg-[#070F2B]`}>
+    <nav className={`${styles.paddingX} w-full flex items-center py-5 fixed top-0 z-20 bg-[#070F2B]/70 backdrop-blur-lg`}>
       <div className="w-full flex justify-between items-center max-w-7xl mx-auto">
         <Link
           to="/"
@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
           />
 
           <div
-            className={`absolute top-0 h-screen w-2/3 bg-gradient-to-tl from-[#1B1A55]/10 to-[#535C91] backdrop-blur-lg z-10 p-6 md:hidden smooth-transition ${
+            className={`absolute top-0 h-screen w-2/3 bg-gradient-to-tl from-[#1B1A55]/10 to-[#535C91]/20 backdrop-blur-lg z-10 p-6 md:hidden smooth-transition ${
               toggle ? "left-0" : "-left-full"
             }`}
           >
