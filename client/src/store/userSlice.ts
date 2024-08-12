@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User, UserState } from "@/store/interfaces";
-import {} from "@/api/users";
+// import {} from "@/api/users";
 
 export const userSlice = createSlice({
   name: "task",

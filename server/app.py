@@ -8,8 +8,10 @@ from firebase_admin import auth
 from firebase_setup import initialize_firebase
 from flask_migrate import Migrate
 import uuid
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 db.init_app(app)
 migrate = Migrate(app, db)

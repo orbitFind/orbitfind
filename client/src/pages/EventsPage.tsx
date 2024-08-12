@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
-import { FaSearch, FaBell, FaUserCircle, FaCalendarAlt, FaHome, FaUsers, FaTimes, FaMapMarkerAlt, FaTag, FaCalendar } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { FaSearch, FaCalendarAlt, FaHome, FaUsers, FaTimes, FaMapMarkerAlt, FaCalendar } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { events } from '@/constants';
+import { useAppDispatch } from '@/store/store';
+import { getAllEvents } from '@/api/events';
 
 const EventsPage = () => {
+    const dispatch = useAppDispatch();
+
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showPeople, setShowPeople] = useState(false);
     const [selectedRegion, setSelectedRegion] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [tags, setTags] = useState<string[]>([]);
     const [inputTag, setInputTag] = useState('');
-    const [zoomedImage, setZoomedImage] = useState<string | null>(null); // New state for zoomed image
+    // const [zoomedImage, setZoomedImage] = useState<string | null>(null); // New state for zoomed image
 
     const handleMoreInfo = (event: any) => {
         setSelectedEvent(event);
@@ -60,6 +64,19 @@ const EventsPage = () => {
             imageUrl: `https://via.placeholder.com/32x32?text=P${index + 1}`,
         })).sort(() => 0.5 - Math.random()).slice(0, 3);
     };
+
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await dispatch(getAllEvents()).unwrap(); // Unwraps the result to handle it directly
+                console.log(response);
+            } catch (error) {
+                console.error("Failed to fetch events:", error);
+            }
+        };
+        fetchEvents();
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#070F2B] flex flex-col md:flex-row">
@@ -155,8 +172,8 @@ const EventsPage = () => {
                                 <span className="text-[#E5E7EB]">{event.people} Going</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <button 
-                                    onClick={() => handleMoreInfo(event)} 
+                                <button
+                                    onClick={() => handleMoreInfo(event)}
                                     className="bg-[#070F2B] text-[#E5E7EB] py-1 px-3 rounded hover:bg-[#535C91] transition duration-200 ease-in-out">
                                     More Info
                                 </button>
@@ -189,7 +206,7 @@ const EventsPage = () => {
                             </button>
                             <h2 className="text-2xl font-semibold text-[#E5E7EB] mb-4">{selectedEvent.title}</h2>
                             <p className="text-[#E5E7EB] mb-4">{selectedEvent.description}</p>
-                            
+
                             {/* Location */}
                             <div className="mb-4 flex items-center">
                                 <FaMapMarkerAlt className="text-[#E5E7EB] mr-2" />
