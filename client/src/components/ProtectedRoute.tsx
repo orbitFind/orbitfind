@@ -19,6 +19,8 @@ const ProtectedRoute: React.FC = () => {
             dispatch(setAuthUser({ authUser: user, token }));
         }
 
+        console.log(authUser)
+
         if (!authUser) {
             navigate("/auth")
         }

@@ -65,19 +65,6 @@ const EventsPage = () => {
         })).sort(() => 0.5 - Math.random()).slice(0, 3);
     };
 
-
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const response = await dispatch(getAllEvents()).unwrap(); // Unwraps the result to handle it directly
-                console.log(response);
-            } catch (error) {
-                console.error("Failed to fetch events:", error);
-            }
-        };
-        fetchEvents();
-    }, []);
-
     return (
         <div className="min-h-screen bg-[#070F2B] flex flex-col md:flex-row">
             {/* Sidebar */}
