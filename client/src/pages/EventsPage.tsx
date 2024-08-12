@@ -1,12 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FaSearch, FaCalendarAlt, FaHome, FaUsers, FaTimes, FaMapMarkerAlt, FaCalendar } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { events } from '@/constants';
-import { useAppDispatch } from '@/store/store';
-import { getAllEvents } from '@/api/events';
-
 const EventsPage = () => {
-    const dispatch = useAppDispatch();
 
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showPeople, setShowPeople] = useState(false);
