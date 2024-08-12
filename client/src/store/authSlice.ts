@@ -13,6 +13,7 @@ export const authSlice = createSlice({
       action: PayloadAction<{ authUser: AuthUser; token: string }>
     ) {
       const { authUser, token } = action.payload;
+
       state.authUser = authUser;
       state.token = token;
     },
