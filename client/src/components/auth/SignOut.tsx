@@ -1,13 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useAppDispatch } from '@/store/store';
+import { clearAuthUser } from '@/store/authSlice';
 
 const SignOut = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     const handleSignOut = async () => {
         try {
             await signOut(auth).then(() => {
+                dispatch(clearAuthUser());
                 navigate('/');
             });
         } catch (error) {
