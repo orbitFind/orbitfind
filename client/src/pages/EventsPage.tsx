@@ -14,7 +14,7 @@ const EventsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [tags, setTags] = useState<string[]>([]);
     const [inputTag, setInputTag] = useState('');
-    // const [zoomedImage, setZoomedImage] = useState<string | null>(null); // New state for zoomed image
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleMoreInfo = (event: any) => {
         setSelectedEvent(event);
@@ -44,16 +44,32 @@ const EventsPage = () => {
         setTags(tags.filter(t => t !== tag));
     };
 
+    const similarTagMatch = (eventTags: string[]) => {
+        return tags.some(tag => eventTags.some(eventTag => eventTag.toLowerCase().includes(tag.toLowerCase())));
+    };
+
+    const matchesSearchTerm = (event: any) => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            event.title.toLowerCase().includes(lowerCaseSearchTerm) ||
+            event.region.toLowerCase().includes(lowerCaseSearchTerm) ||
+            event.category.toLowerCase().includes(lowerCaseSearchTerm) ||
+            event.tags.some((tag: string) => tag.toLowerCase().includes(lowerCaseSearchTerm))
+        );
+    };
+
     const filteredEvents = events.filter(event =>
         (selectedRegion === '' || event.region === selectedRegion) &&
         (selectedCategory === '' || event.category === selectedCategory) &&
-        tags.every(tag => event.tags.includes(tag))
+        tags.every(tag => event.tags.includes(tag)) &&
+        matchesSearchTerm(event)
     );
 
     const similarEvents = events.filter(event =>
         (selectedRegion === '' || event.region === selectedRegion) &&
         (selectedCategory === '' || event.category === selectedCategory) &&
-        tags.some(tag => event.tags.includes(tag))
+        similarTagMatch(event.tags) &&
+        matchesSearchTerm(event)
     );
 
     const displayedEvents = filteredEvents.length > 0 ? filteredEvents : similarEvents;
@@ -68,7 +84,12 @@ const EventsPage = () => {
     return (
         <div className="min-h-screen bg-[#070F2B] flex flex-col md:flex-row">
             {/* Sidebar */}
-            <div className="w-full md:w-1/4 bg-[#1B1A55] p-6 border-b md:border-b-0 md:border-r border-[#535C91]">
+            <motion.div
+                className="w-full md:w-1/4 bg-[#1B1A55] p-6 border-b md:border-b-0 md:border-r border-[#535C91] transition duration-200 ease-in-out"
+                initial={{ x: -100 }}
+                animate={{ x: 0 }}
+                exit={{ x: -100 }}
+            >
                 <img className="h-10 mb-6 text-[#E5E7EB]" src='/Orbitfind.png' alt="Logo" />
                 <nav className="space-y-4">
                     <button className="flex items-center space-x-2 p-2 hover:bg-[#535C91] rounded">
@@ -80,29 +101,44 @@ const EventsPage = () => {
                         <span className="text-lg text-[#E5E7EB]">Events</span>
                     </button>
                 </nav>
-            </div>
+            </motion.div>
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="bg-[#1B1A55] p-4 border-b border-[#535C91] flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                <motion.div
+                    className="bg-[#1B1A55] p-4 border-b border-[#535C91] flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <div className="flex items-center space-x-4">
                         <FaSearch className="text-2xl text-[#9290C3]" />
                         <input
                             type="text"
                             placeholder="Search"
-                            className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB]"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8]"
                         />
                     </div>
                     <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <select value={selectedRegion} onChange={handleRegionChange} className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none">
+                        <select
+                            value={selectedRegion}
+                            onChange={handleRegionChange}
+                            className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out"
+                        >
                             <option value="">Select Region</option>
                             <option value="London">London</option>
                             <option value="New York">New York</option>
                             <option value="Delhi">Delhi</option>
                             <option value="Bangladesh">Bangladesh</option>
                         </select>
-                        <select value={selectedCategory} onChange={handleCategoryChange} className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none">
+                        <select
+                            value={selectedCategory}
+                            onChange={handleCategoryChange}
+                            className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out"
+                        >
                             <option value="">Select Category</option>
                             <option value="Music">Music</option>
                             <option value="Technology">Technology</option>
@@ -119,7 +155,7 @@ const EventsPage = () => {
                                 value={inputTag}
                                 onChange={(e) => setInputTag(e.target.value)}
                                 onKeyDown={handleTagInput}
-                                className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB]"
+                                className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8]"
                             />
                             <div className="flex flex-wrap space-x-2 ml-2">
                                 {tags.map((tag, index) => (
@@ -131,16 +167,20 @@ const EventsPage = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Events Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
                     {displayedEvents.map(event => (
                         <motion.div
                             key={event.id}
-                            className="bg-[#1B1A55] p-6 rounded-lg shadow-lg"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            className="bg-[#1B1A55] p-6 rounded-lg shadow-lg transition duration-200 ease-in-out hover:shadow-xl"
+                            whileHover={{ scale: 1.02 }}
                         >
                             <h3 className="text-xl font-semibold text-[#E5E7EB] mb-2">{event.title}</h3>
                             <div className="flex items-center text-[#9290C3] mb-4">
@@ -170,7 +210,7 @@ const EventsPage = () => {
                             </div>
                         </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
 
             {/* Modal for More Info */}
@@ -235,8 +275,6 @@ const EventsPage = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Attachments */}
                         </motion.div>
                     </motion.div>
                 )}
