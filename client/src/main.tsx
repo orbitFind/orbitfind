@@ -12,9 +12,6 @@ import EventsPage from '@/pages/EventsPage';
 
 import store from '@/store/store';
 import ProtectedRoute from './components/ProtectedRoute';
-import { setupAuthListener } from './lib/authListener';
-
-setupAuthListener();
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
