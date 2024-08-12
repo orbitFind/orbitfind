@@ -20,6 +20,7 @@ export interface AuthUser {
 
 export interface AuthState {
   authUser: AuthUser | null;
+  token: string | null;
 }
 
 interface Event {
@@ -28,6 +29,14 @@ interface Event {
   description: string;
   badges: Badge[];
   status: "before" | "ongoing" | "completed";
+  date_start: Date;
+  date_end: Date;
+}
+
+export interface EventCreate {
+  name: string;
+  description: string;
+  badges?: Badge[];
   date_start: Date;
   date_end: Date;
 }

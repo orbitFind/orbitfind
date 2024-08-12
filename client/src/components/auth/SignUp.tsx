@@ -37,12 +37,20 @@ const SignUp = () => {
                 throw new Error('Invalid user object');
             }
 
+            const token = await user.getIdToken();
+
             // Set the auth user in the store
             dispatch(setAuthUser({
-                uid: user.uid,
-                email: user.email,
-                displayName: displayName,
+                authUser: {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                },
+                token: token
             }));
+
+            // Persist user and token in localStorage
+            localStorage.setItem('authUser', JSON.stringify({ user, token }));
 
             // Clear the form
             setEmail('');

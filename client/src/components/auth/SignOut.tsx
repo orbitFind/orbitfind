@@ -11,6 +11,7 @@ const SignOut = () => {
     const handleSignOut = async () => {
         try {
             await signOut(auth).then(() => {
+                localStorage.removeItem("authUser");
                 dispatch(clearAuthUser());
                 navigate('/');
             });
