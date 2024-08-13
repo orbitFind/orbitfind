@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { World, GlobeConfig } from './ui/Globe'; // Adjust the path as needed
+import { World, GlobeConfig } from '@/components/ui/Globe'; // Adjust the path as needed
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
-import { firestore } from '../firebase'; // Adjust the path to your firebase configuration
+import { firestore } from '@/lib/firebase'; // Adjust the path to your firebase configuration
 import { useToast } from '@/components/ui/use-toast'; // Import useToast from Shadcn
 
 const globeConfig: GlobeConfig = {
@@ -84,7 +84,7 @@ const WaitList: React.FC = () => {
     setIsModalOpen(true);
     document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
   };
-  
+
   const closeModal = () => {
     setIsModalOpen(false);
     document.body.style.overflow = 'auto'; // Restore body scroll when modal is closed
@@ -98,13 +98,13 @@ const WaitList: React.FC = () => {
       <div className="content">
         <h1 className="title">OrbitFind - Find exciting events in your orbit!</h1>
         <p className="description">
-        Level up your event discovery experience, earn badges, and create your own events for your community!        
+          Level up your event discovery experience, earn badges, and create your own events for your community!
         </p>
         <button
           onClick={openModal}
           className="cta-button"
         >
-         Join WaitList
+          Join WaitList
         </button>
       </div>
 

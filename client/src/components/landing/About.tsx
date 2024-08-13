@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
-import styles from './About.module.css'; // Import the CSS module for styling
-import { styles as globalStyles } from '../styles'; // Import global styles
+import styles from '@/components/landing/About.module.css'; // Import the CSS module for styling
+import { styles as globalStyles } from '@/styles'; // Import global styles
 import { FaTiktok } from 'react-icons/fa';
 
 const About = () => {
   return (
     <div className={`${globalStyles.padding} ${styles.aboutContainer}`} id='about'>
       {/* About OrbitFind Section */}
-      <motion.div 
+      <motion.div
         className={styles.aboutOrbitFind}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
