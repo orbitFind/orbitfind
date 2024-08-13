@@ -269,5 +269,21 @@ const events = [
   },
 ];
 
+const categories = [
+  { value: 'Music', label: 'Music' },
+  { value: 'Technology', label: 'Technology' },
+  { value: 'Sports', label: 'Sports' },
+  { value: 'Food', label: 'Food' },
+  { value: 'Entertainment', label: 'Entertainment' },
+  { value: 'Art', label: 'Art' },
+  { value: 'Business', label: 'Business' },
+]
 
-export { teamMembers, events };
+const regions = [
+  { value: 'London', label: 'London' },
+  { value: 'New York', label: 'New York' },
+  { value: 'Delhi', label: 'Delhi' },
+  { value: 'Bangladesh', label: 'Bangladesh' },
+];
+
+export { teamMembers, events, categories, regions };
