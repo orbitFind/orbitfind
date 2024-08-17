@@ -17,7 +17,7 @@ const teamMembers = [
   {
     name: "Tanveer Singh",
     img: "/tanveer1.jpg",
-    desc: "Hey! I’m Tanveer, a Frontend Developer based in London. I’m passionate about crafting intuitive user experiences and also enjoy tinkering with hardware. Always excited to blend creativity with technology!",
+    desc: "Hey! I'm Tanveer, a Frontend Developer based in London. I'm passionate about crafting intuitive user experiences and also enjoy tinkering with hardware. Always excited to blend creativity with technology!",
     linkedin: "https://www.linkedin.com/in/tanveerxz",
   },
   {
@@ -40,7 +40,19 @@ const teamMembers = [
   },
 ];
 
-const events = [
+interface Event {
+  id: number;
+  title: string;
+  date: string;
+  region: string;
+  category: string;
+  people: number;
+  description: string;
+  location: string;
+  tags: string[];
+}
+
+const events: Event[] = [
   {
     id: 1,
     title: "Central Park SummerStage",
@@ -230,7 +242,8 @@ const events = [
     region: "New York",
     category: "Sports",
     people: 3000,
-    description: "Run through the streets of Brooklyn in this iconic half marathon.",
+    description:
+      "Run through the streets of Brooklyn in this iconic half marathon.",
     location: "Brooklyn, NY",
     tags: ["running", "marathon", "sports"],
   },
@@ -241,7 +254,8 @@ const events = [
     region: "Bangladesh",
     category: "Entertainment",
     people: 1000,
-    description: "A colorful festival showcasing kites of all shapes and sizes.",
+    description:
+      "A colorful festival showcasing kites of all shapes and sizes.",
     location: "Dhaka, Bangladesh",
     tags: ["kites", "festival", "culture"],
   },
@@ -252,7 +266,8 @@ const events = [
     region: "London",
     category: "Food",
     people: 15000,
-    description: "A culinary extravaganza featuring top chefs and food vendors.",
+    description:
+      "A culinary extravaganza featuring top chefs and food vendors.",
     location: "Wembley Stadium, London",
     tags: ["food", "festival", "cuisine"],
   },
@@ -270,20 +285,20 @@ const events = [
 ];
 
 const categories = [
-  { value: 'Music', label: 'Music' },
-  { value: 'Technology', label: 'Technology' },
-  { value: 'Sports', label: 'Sports' },
-  { value: 'Food', label: 'Food' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Art', label: 'Art' },
-  { value: 'Business', label: 'Business' },
-]
+  { value: "Music", label: "Music" },
+  { value: "Technology", label: "Technology" },
+  { value: "Sports", label: "Sports" },
+  { value: "Food", label: "Food" },
+  { value: "Entertainment", label: "Entertainment" },
+  { value: "Art", label: "Art" },
+  { value: "Business", label: "Business" },
+];
 
 const regions = [
-  { value: 'London', label: 'London' },
-  { value: 'New York', label: 'New York' },
-  { value: 'Delhi', label: 'Delhi' },
-  { value: 'Bangladesh', label: 'Bangladesh' },
+  { value: "London", label: "London" },
+  { value: "New York", label: "New York" },
+  { value: "Delhi", label: "Delhi" },
+  { value: "Bangladesh", label: "Bangladesh" },
 ];
 
 export { teamMembers, events, categories, regions };

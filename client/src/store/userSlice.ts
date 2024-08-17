@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User, UserState } from "@/store/interfaces";
+import { User, UserState } from "@/constants/interfaces";
 // import {} from "@/api/users";
 
 export const userSlice = createSlice({

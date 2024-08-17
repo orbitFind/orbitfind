@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { EventState } from "./interfaces";
+import { EventState } from "@/constants/interfaces";
 import { getAllEvents } from "@/api/events";
 
 const eventsSlice = createSlice({

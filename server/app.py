@@ -112,7 +112,7 @@ def delete_user(id):
 @app.route('/events', methods=['POST'])
 def create_event():
     data = request.get_json()
-    new_event = Event(name = data['name'], description = data['description'], date_start = data['date_start'], date_end = data['date_end'], status="before")
+    new_event = Event(name = data['name'], description = data['description'], date_start = data['date_start'], date_end = data['date_end'], region=data["region"], location=data["location"], tags=data["tags"], status=data["status"])
     if "badges" in data:
         new_event.badges = data["badges"]
     db.session.add(new_event)

@@ -27,10 +27,11 @@ interface Event {
   event_id: number;
   name: string;
   description: string;
-  badges: Badge[];
+  badges?: Badge[];
   status: "before" | "ongoing" | "completed";
   date_start: Date;
   date_end: Date;
+  hosted_by: string;
 }
 
 export interface EventCreate {
@@ -39,6 +40,7 @@ export interface EventCreate {
   badges?: Badge[];
   date_start: Date;
   date_end: Date;
+  hosted_by: string;
 }
 
 export interface EventState {
