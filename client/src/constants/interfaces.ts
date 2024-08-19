@@ -29,6 +29,7 @@ interface Event {
   description: string;
   badges?: Badge[];
   status: "before" | "ongoing" | "completed";
+  tags: string[];
   date_start: Date;
   date_end: Date;
   hosted_by: string;
@@ -38,9 +39,11 @@ export interface EventCreate {
   name: string;
   description: string;
   badges?: Badge[];
+  region: string;
+  location: string;
+  tags: string[];
   date_start: Date;
   date_end: Date;
-  hosted_by: string;
 }
 
 export interface EventState {
@@ -48,7 +51,7 @@ export interface EventState {
   fetchStatus: "loading" | "success" | "error" | null;
 }
 
-interface Badge {
+export interface Badge {
   badge_id: string;
   name: string;
 }

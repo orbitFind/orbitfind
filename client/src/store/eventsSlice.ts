@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { EventState } from "@/constants/interfaces";
-import { getAllEvents } from "@/api/events";
+import { getAllEvents, createEvent } from "@/api/events";
 
 const eventsSlice = createSlice({
   name: "events",
@@ -17,9 +17,17 @@ const eventsSlice = createSlice({
       state.events = action.payload;
       state.fetchStatus = "success";
     });
-    builder.addCase(getAllEvents.rejected, (state) => {
-      state.fetchStatus = "error";
-    });
+    builder
+      .addCase(getAllEvents.rejected, (state) => {
+        state.fetchStatus = "error";
+      })
+      .addCase(createEvent.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(createEvent.fulfilled, (state, action) => {
+        state.events.push(action.payload);
+        state.fetchStatus = "success";
+      });
   },
 });
 

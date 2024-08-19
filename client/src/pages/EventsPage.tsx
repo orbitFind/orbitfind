@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { events, categories, regions } from "@/constants"; // Assuming events are defined in constants
+import { useNavigate } from "react-router-dom";
 
 const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -19,6 +20,8 @@ const EventsPage = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [inputTag, setInputTag] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate();
 
   const handleMoreInfo = (event: any) => {
     setSelectedEvent(event);
@@ -129,13 +132,13 @@ const EventsPage = () => {
           alt="Logo"
         />
         <nav className="space-y-4">
-          <button className="flex items-center space-x-2 p-2 hover:bg-[#535C91] rounded">
+          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded">
             <FaHome className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-[#E5E7EB]">Home</span>
+            <span className="text-lg text-black">Home</span>
           </button>
-          <button className="flex items-center space-x-2 p-2 hover:bg-[#535C91] rounded">
+          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded" onClick={() => navigate("/events/create")}>
             <FaCalendarAlt className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-[#E5E7EB]">Events</span>
+            <span className="text-lg text-black">Create Event</span>
           </button>
         </nav>
       </motion.div>
@@ -358,9 +361,8 @@ const EventsPage = () => {
                       (_, index) => (
                         <div key={index} className="flex items-center mb-2">
                           <img
-                            src={`https://via.placeholder.com/32x32?text=P${
-                              index + 1
-                            }`}
+                            src={`https://via.placeholder.com/32x32?text=P${index + 1
+                              }`}
                             alt={`Person ${index + 1}`}
                             className="w-8 h-8 rounded-full mr-2"
                           />

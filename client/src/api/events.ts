@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "@/api/base";
 import axios from "axios";
-import { Event, EventCreate } from "@/store/interfaces";
+import { Event, EventCreate } from "@/constants/interfaces";
 import { useSelector } from "react-redux";
 import { selectAuthUser } from "@/store/store";
 
@@ -19,7 +19,7 @@ export const getAllEvents = createAsyncThunk("getAllEvents", async () => {
   }
 });
 
-export const creatEvent = createAsyncThunk(
+export const createEvent = createAsyncThunk(
   "createEvent",
   async (eventData: EventCreate, { rejectWithValue }) => {
     try {

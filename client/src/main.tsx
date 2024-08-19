@@ -12,6 +12,7 @@ import EventsPage from '@/pages/EventsPage';
 
 import store from '@/store/store';
 import ProtectedRoute from './components/ProtectedRoute';
+import CreateEventsPage from './pages/CreateEventsPage';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             {/* Protected routes */}
             <Route element={<ProtectedRoute />} >
               <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/create" element={<CreateEventsPage />} />
             </Route>
           </Route>
         </Routes>
