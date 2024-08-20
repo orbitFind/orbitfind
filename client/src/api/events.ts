@@ -23,14 +23,17 @@ export const createEvent = createAsyncThunk(
   "createEvent",
   async (eventData: EventCreate, { rejectWithValue }) => {
     try {
+      const { token } = useSelector(selectAuthUser);
       const response = await api.post(
         "/events",
         {
           ...eventData,
+          status: "before",
         },
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );

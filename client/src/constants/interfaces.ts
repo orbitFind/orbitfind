@@ -1,17 +1,22 @@
-interface UserState {
-  user: User;
-  fetchStatus: string;
-}
-
-interface User {
-  _id: string;
+export interface User {
+  id: string;
   email: string;
   password: string;
   firstName: string;
   lastName: string;
   token: string;
-  events: Event[]; // Add the events property to the User interface
+  signedUpTo: Event[]; // Add the events property to the User interface
+  hostedEvents: Event[];
+  completedEvents: Event[];
+  badges: Badge[];
+  achievements: Achievement[];
 }
+
+export interface UserState {
+  user: User;
+  fetchStatus: string;
+}
+
 export interface AuthUser {
   uid: string;
   email: string;
@@ -23,7 +28,7 @@ export interface AuthState {
   token: string | null;
 }
 
-interface Event {
+export interface Event {
   event_id: number;
   name: string;
   description: string;
@@ -65,4 +70,12 @@ export interface AuthState {
   authUser: AuthUser | null;
 }
 
-export type { UserState, User, Event };
+export interface Achievement {
+  achievementId: string;
+  name: string;
+  userId: string;
+  badgeId?: string;
+  noToCompletion: number;
+  progress: number;
+  completed: boolean;
+}

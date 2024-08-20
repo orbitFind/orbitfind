@@ -10,6 +10,8 @@ from flask_migrate import Migrate
 import uuid
 from flask_cors import CORS
 
+from server.utils import verify_user
+
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
@@ -80,13 +82,13 @@ def sync_users():
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([{'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email} for user in users])
+    return jsonify([{'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email} for user in users]), 200
 
 # Read one user
 @app.route('/users/<string:id>', methods=['GET'])
 def get_user(id):
     user = User.query.get_or_404(id)
-    return jsonify({'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email})
+    return jsonify({'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email}), 200
 
 # Finish user (put the full name, which firebase does not provide - firebase provides email, username and user_id)
 @app.route('/users/<string:id>', methods=['PUT'])
@@ -96,7 +98,7 @@ def finish_user(id):
     user = User.query.get_or_404(id)
     user.full_name = data['full_name']
     db.session.commit()
-    return jsonify({'message': 'User updated successfully'})
+    return jsonify({'message': 'User updated successfully'}), 201
 
 # Delete user
 @app.route('/users/<int:id>', methods=['DELETE'])
@@ -104,44 +106,68 @@ def delete_user(id):
     user = User.query.get_or_404(id)
     db.session.delete(user)
     db.session.commit()
-    return jsonify({'message': 'User deleted successfully'})
+    return jsonify({'message': 'User deleted successfully'}), 200
 
 # --- EVENTS ---
 
 # Create event
 @app.route('/events', methods=['POST'])
 def create_event():
-    data = request.get_json()
-    new_event = Event(name = data['name'], description = data['description'], date_start = data['date_start'], date_end = data['date_end'], region=data["region"], location=data["location"], tags=data["tags"], status=data["status"])
-    if "badges" in data:
-        new_event.badges = data["badges"]
-    db.session.add(new_event)
-    db.session.commit()
-    return jsonify({'message': 'Event created successfully'}), 201
+    try:
+        # Verify the user
+        user = verify_user(request)
+        if user is None:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # After successfully verifying the user, we can create the event
+        data = request.get_json()
+        new_event = Event(name = data['name'], description = data['description'], date_start = data['date_start'], date_end = data['date_end'], region=data["region"], location=data["location"], tags=data["tags"], status=data["status"], hosts=[user])
+        if "badges" in data:
+            new_event.badges = data["badges"]
+        db.session.add(new_event)
+        db.session.commit()
+        return jsonify({'message': 'Event created successfully'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
 
 # Update event
 @app.route('/events/<int:id>', methods=['PUT'])
 def update_event(id):
-    data = request.get_json()
-    event = Event.query.get_or_404(id)
-    if 'name' in data:
-        event.name = data['name']
-    if 'description' in data:
-        event.description = data['description']
-    if 'status' in data:
-        event.status = data['status']
-    if 'date_start' in data:
-        try:
-            event.date_start = date.fromisoformat(data['date_start'])
-        except ValueError:
-            return jsonify({"error": "Invalid date format for date_start"}), 400
-    if 'date_end' in data:
-        try:
-            event.date_end = date.fromisoformat(data['date_end'])
-        except ValueError:
-            return jsonify({"error": "Invalid date format for date_end"}), 400
-    db.session.commit()
-    return jsonify({'message': 'Event updated successfully'})
+    try:
+        # Verify the user
+        user = verify_user(request)
+        if user is None:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json()
+        event = Event.query.get_or_404(id)
+
+        # Check if the user is the host.
+        if user.user_id not in [host.user_id for host in event.hosts]:
+            return jsonify({'error': 'User is not the host of the event'}), 403
+
+        # Update the event
+        if 'name' in data:
+            event.name = data['name']
+        if 'description' in data:
+            event.description = data['description']
+        if 'status' in data:
+            event.status = data['status']
+        if 'date_start' in data:
+            try:
+                event.date_start = date.fromisoformat(data['date_start'])
+            except ValueError:
+                return jsonify({"error": "Invalid date format for date_start"}), 400
+        if 'date_end' in data:
+            try:
+                event.date_end = date.fromisoformat(data['date_end'])
+            except ValueError:
+                return jsonify({"error": "Invalid date format for date_end"}), 400
+        db.session.commit()
+        return jsonify({'message': 'Event updated successfully'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/events', methods=['GET'])
 def get_events():
@@ -155,10 +181,22 @@ def get_event(id):
 
 @app.route('/events/<int:id>', methods=['DELETE'])
 def delete_event(id):
-    event = Event.query.get_or_404(id)
-    db.session.delete(event)
-    db.session.commit()
-    return jsonify({'message': 'Event deleted successfully'})
+    try:
+        # Verify user
+        user = verify_user(request)
+        if user is None:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if the user is the host.
+        if user.user_id not in [host.user_id for host in event.hosts]:
+            return jsonify({'error': 'User is not the host of the event'}), 403
+
+        event = Event.query.get_or_404(id)
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({'message': 'Event deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # --- BADGES ---
 
@@ -186,7 +224,7 @@ def update_badge(id):
     old_name = badge.name
     badge.name = data['name']
     db.session.commit()
-    return jsonify({'message':"Badge updated successfully!", "badge_id": id, "old_name": old_name, "new_name": badge.name}), 200
+    return jsonify({'message':"Badge updated successfully!", "badge_id": id, "old_name": old_name, "new_name": badge.name}), 201
 
 # See badges
 @app.route('/badges', methods=['GET'])
