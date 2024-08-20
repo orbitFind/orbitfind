@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { setAuthUser } from '@/store/authSlice';
 import SignOut from '@/components/auth/SignOut';
 import { selectAuthUser, useAppDispatch } from '@/store/store';
+import { auth } from '@/lib/firebase';
 
 const ProtectedRoute: React.FC = () => {
     const { authUser } = useSelector(selectAuthUser);
@@ -13,8 +14,12 @@ const ProtectedRoute: React.FC = () => {
     useEffect(() => {
         const assignAuth = async () => {
             try {
-                const storedAuthUser = localStorage.getItem('authUser');
+                if (!auth) {
+                    localStorage.removeItem('authUser');
+                    return;
+                }
 
+                const storedAuthUser = localStorage.getItem('authUser');
                 if (storedAuthUser) {
                     const { user, token } = JSON.parse(storedAuthUser);
 

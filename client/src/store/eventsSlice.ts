@@ -10,14 +10,14 @@ const eventsSlice = createSlice({
   } as EventState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(getAllEvents.pending, (state) => {
-      state.fetchStatus = "loading";
-    });
-    builder.addCase(getAllEvents.fulfilled, (state, action) => {
-      state.events = action.payload;
-      state.fetchStatus = "success";
-    });
     builder
+      .addCase(getAllEvents.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(getAllEvents.fulfilled, (state, action) => {
+        state.events = action.payload;
+        state.fetchStatus = "success";
+      })
       .addCase(getAllEvents.rejected, (state) => {
         state.fetchStatus = "error";
       })

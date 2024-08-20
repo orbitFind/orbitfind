@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaSearch,
   FaCalendarAlt,
@@ -9,17 +9,32 @@ import {
   FaCalendar,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { events, categories, regions } from "@/constants"; // Assuming events are defined in constants
+import { categories, regions } from "@/constants"; // Assuming events are defined in constants
 import { useNavigate } from "react-router-dom";
+import { selectAuthUser, selectEvents, useAppDispatch } from "@/store/store";
+import { getAllEvents } from "@/api/events";
+import { useSelector } from "react-redux";
+import { Event } from "@/constants/interfaces";
 
 const EventsPage = () => {
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showPeople, setShowPeople] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [inputTag, setInputTag] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const dispatch = useAppDispatch();
+  const { events } = useSelector(selectEvents)
+  const { token } = useSelector(selectAuthUser)
+  useEffect(() => {
+    const fetchEvents = async () => {
+      await dispatch(getAllEvents(token!));
+    }
+
+    fetchEvents();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -76,36 +91,33 @@ const EventsPage = () => {
     );
   };
 
-  const matchesSearchTerm = (event: any) => {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  const matchesSearchTerm = (event: Event) => {
+    const lowerCaseSearchTerm = searchTerm?.toLowerCase();
     return (
-      event.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.region.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.category.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.tags.some((tag: string) =>
+      event.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.region?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.category?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.tags?.some((tag: string) =>
         tag.toLowerCase().includes(lowerCaseSearchTerm)
       )
     );
   };
 
-  const filteredEvents = events.filter(
-    (event) =>
-      (selectedRegion === "" || event.region === selectedRegion) &&
-      (selectedCategory === "" || event.category === selectedCategory) &&
-      tags.every((tag) => event.tags.includes(tag)) &&
-      matchesSearchTerm(event)
+  const filterEvents = events?.filter((event) =>
+    (selectedRegion === "" || event.region === selectedRegion) &&
+    (selectedCategory === "" || event.category === selectedCategory) &&
+    tags.every((tag) => event.tags.includes(tag)) &&
+    matchesSearchTerm(event)
   );
 
-  const similarEvents = events.filter(
-    (event) =>
-      (selectedRegion === "" || event.region === selectedRegion) &&
-      (selectedCategory === "" || event.category === selectedCategory) &&
-      similarTagMatch(event.tags) &&
-      matchesSearchTerm(event)
+  const getSimilarEvents = events?.filter((event) =>
+    (selectedRegion === "" || event.region === selectedRegion) &&
+    (selectedCategory === "" || event.category === selectedCategory) &&
+    similarTagMatch(event.tags) &&
+    matchesSearchTerm(event)
   );
 
-  const displayedEvents =
-    filteredEvents.length > 0 ? filteredEvents : similarEvents;
+  const displayedEvents = filterEvents.length > 0 ? filterEvents : getSimilarEvents;
 
   const getRandomPeople = (num: number) => {
     return Array.from({ length: num })
@@ -251,17 +263,17 @@ const EventsPage = () => {
           {displayedEvents.length > 0 ? (
             displayedEvents.map((event) => (
               <motion.div
-                key={event.id}
+                key={event.event_id}
                 className="bg-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
                 whileHover={{ scale: 1.02 }} // Scale effect on hover
               >
                 <div>
                   <h3 className="text-xl font-semibold text-[#E5E7EB] mb-2">
-                    {event.title}
+                    {event.name}
                   </h3>
                   <div className="flex items-center text-[#9290C3] mb-4">
                     <FaCalendar className="mr-2" />
-                    <span>{event.date}</span>
+                    <span>{event.date_start}</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-4">
                     {getRandomPeople(3).map((person) => (
@@ -318,7 +330,7 @@ const EventsPage = () => {
                 <FaTimes />
               </button>
               <h2 className="text-2xl font-semibold text-[#E5E7EB] mb-4">
-                {selectedEvent.title}
+                {selectedEvent.name}
               </h2>
               <p className="text-[#E5E7EB] mb-4">{selectedEvent.description}</p>
 

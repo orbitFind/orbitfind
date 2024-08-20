@@ -1,5 +1,4 @@
-from datetime import date
-import datetime
+from datetime import date, datetime
 from flask import Flask, request, jsonify
 from config import Config
 from models import db, User, Event, Badge, Achievement
@@ -10,7 +9,7 @@ from flask_migrate import Migrate
 import uuid
 from flask_cors import CORS
 
-from server.utils import verify_user
+from utils import verify_user
 
 app = Flask(__name__)
 CORS(app)
@@ -115,19 +114,39 @@ def delete_user(id):
 def create_event():
     try:
         # Verify the user
-        user = verify_user(request)
+        auth_header = request.headers.get('Authorization')
+        user = verify_user(auth_header)
         if user is None:
             return jsonify({'error': 'User not found'}), 404
         
         # After successfully verifying the user, we can create the event
         data = request.get_json()
-        new_event = Event(name = data['name'], description = data['description'], date_start = data['date_start'], date_end = data['date_end'], region=data["region"], location=data["location"], tags=data["tags"], status=data["status"], hosts=[user])
+
+        # Convert date strings to datetime objects
+        date_start = datetime.strptime(data['date_start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        date_end = datetime.strptime(data['date_end'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        
+        # Format datetime objects to MySQL compatible string format
+        date_start_str = date_start.strftime('%Y-%m-%d %H:%M:%S')
+        date_end_str = date_end.strftime('%Y-%m-%d %H:%M:%S')
+
+        new_event = Event(
+            name = data['name'],
+            description = data['description'],
+            date_start = date_start_str,
+            date_end = date_end_str,
+            region=data["region"],
+            location=data["location"],
+            tags=list(data["tags"]),
+            status=data["status"],
+            hosted_users=[user])
         if "badges" in data:
             new_event.badges = data["badges"]
         db.session.add(new_event)
         db.session.commit()
         return jsonify({'message': 'Event created successfully'}), 201
     except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
         
 
@@ -156,12 +175,16 @@ def update_event(id):
             event.status = data['status']
         if 'date_start' in data:
             try:
-                event.date_start = date.fromisoformat(data['date_start'])
+                date_start = datetime.strptime(data['date_start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                date_start_str = date_start.strftime('%Y-%m-%d %H:%M:%S')
+                event.date_start = date_start_str
             except ValueError:
                 return jsonify({"error": "Invalid date format for date_start"}), 400
         if 'date_end' in data:
             try:
-                event.date_end = date.fromisoformat(data['date_end'])
+                date_end = datetime.strptime(data['date_end'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                date_end_str = date_end.strftime('%Y-%m-%d %H:%M:%S')
+                event.date_end = date_end_str
             except ValueError:
                 return jsonify({"error": "Invalid date format for date_end"}), 400
         db.session.commit()
@@ -172,7 +195,19 @@ def update_event(id):
 @app.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
-    return jsonify([{'event_id': event.event_id, 'name': event.name, "description": event.description, 'status': event.status, 'date_start': event.date_start, 'date_end': event.date_end} for event in events])
+    return jsonify([
+        {'event_id': event.event_id,
+         'name': event.name,
+         "description": event.description,
+         'badges': [badge.badge_id for badge in event.badges],
+         'region': event.region,
+         'location': event.location,
+         'people': len(event.signed_up_users),
+         'status': event.status,
+         'tags': event.tags,
+         'date_start': event.date_start,
+         'date_end': event.date_end,
+        } for event in events])
 
 @app.route('/events/<int:id>', methods=['GET'])
 def get_event(id):

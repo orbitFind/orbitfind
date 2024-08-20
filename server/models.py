@@ -34,26 +34,34 @@ class User(db.Model):
     user_id = db.Column(db.String(255), primary_key=True, unique=True, nullable=False)
     username = db.Column(db.String(255), unique=True, nullable=False)
     full_name = db.Column(db.String(255), nullable=False)
+    bio = db.Column(db.String(255), nullable=True)
     email = db.Column(db.String(255), nullable=False)
+
     badges = db.relationship('Badge', secondary=user_badges, backref=db.backref('users', lazy='dynamic'))
-    completed_events = db.relationship('Event', secondary=user_completed_events, backref=db.backref('completed_by', lazy='dynamic'))
-    signed_up_to = db.relationship('Event', secondary=user_signed_up_to_events, backref=db.backref('signed_up_to', lazy='dynamic'), overlaps="signed_up_events,signed_up_events")
-    hosted_events = db.relationship('Event', secondary=user_hosted_events, backref=db.backref('event_hosts', lazy='dynamic'), overlaps="hostevents,hostevents")
     achievements = db.relationship('Achievement', backref='user', lazy=True)
+
+    signed_up_events = db.relationship('Event', secondary=user_signed_up_to_events, back_populates='signed_up_users', overlaps="signed_up_to")
+    completed_events = db.relationship('Event', secondary=user_completed_events, back_populates='completed_users', overlaps="completed_to")
+    hosted_events = db.relationship('Event', secondary=user_hosted_events, back_populates='hosted_users', overlaps="hosted_to")
+    
 
 class Event(db.Model):
     __tablename__ = 'events'
     event_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    badges = db.relationship('Badge', secondary=event_badges, backref=db.backref('events', lazy='dynamic'))
     status = db.Column(Enum('before', 'ongoing', 'completed', name='status_enum'), nullable=False, default="before")
-    date_start = db.Column(db.Date, nullable=False)
-    date_end = db.Column(db.Date, nullable=False)
+    date_start = db.Column(db.DateTime, nullable=False)
+    date_end = db.Column(db.DateTime, nullable=False)
+    region = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(255), nullable=False)
-    signed_up_users = db.relationship('User', secondary=user_signed_up_to_events, backref=db.backref('signed_up_events', lazy='dynamic'), overlaps="signed_up_to,signed_up_to")
-    hosts = db.relationship('User', secondary=user_hosted_events, backref=db.backref('hosted_events', lazy='dynamic'), overlaps="hosted_by,hosted_events")
     tags = db.Column(db.JSON, nullable=False)
+    
+    badges = db.relationship('Badge', secondary=event_badges, backref=db.backref('events', lazy='dynamic'))
+
+    signed_up_users = db.relationship('User', secondary=user_signed_up_to_events, back_populates='signed_up_events', overlaps="signed_up_events")
+    completed_users = db.relationship('User', secondary=user_completed_events, back_populates='completed_events', overlaps="completed_events")
+    hosted_users = db.relationship('User', secondary=user_hosted_events, back_populates='hosted_events', overlaps="hosted_events")
 
 class Badge(db.Model):
     __tablename__ = 'badges'

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FaSave } from "react-icons/fa";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom";
 
 const CreateEventForm = () => {
     const [eventName, setEventName] = useState('');
@@ -16,7 +17,11 @@ const CreateEventForm = () => {
     const [eventStartDate, setEventStartDate] = useState(new Date());
     const [eventEndDate, setEventEndDate] = useState(new Date());
 
+    const navigate = useNavigate();
+
     const dispatch = useAppDispatch();
+    const authUser = localStorage.getItem('authUser');
+    const { token } = JSON.parse(authUser!);
 
     const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEventName(e.target.value);
@@ -54,16 +59,35 @@ const CreateEventForm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         dispatch(createEvent({
-            name: eventName,
-            description: eventDescription,
-            badges: eventBadges,
-            region: eventRegion,
-            location: eventLocation,
-            tags: eventTags,
-            date_start: eventStartDate,
-            date_end: eventEndDate,
-        }))
+            eventData: {
+                name: eventName,
+                description: eventDescription,
+                badges: eventBadges,
+                region: eventRegion,
+                location: eventLocation,
+                tags: eventTags,
+                date_start: eventStartDate.toISOString(),
+                date_end: eventEndDate.toISOString(),
+            },
+            token
+        })).then(() => {
+            setEventName('');
+            setEventDescription('');
+            setEventBadges([]);
+            setEventRegion('');
+            setEventLocation('');
+            setEventTags([]);
+            setEventStartDate(new Date());
+            setEventEndDate(new Date());
+        }).then(() => {
+            alert('Event created successfully');
+            navigate('/events');
+        }).catch((error) => {
+            alert('Error creating event');
+            console.error(error);
+        });
     };
 
     const handleEventTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -31,7 +31,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/create" element={<CreateEventsPage />} />
               <Route path="/profile" element={<UserProfile />} />
-
             </Route>
           </Route>
         </Routes>
