@@ -7,12 +7,16 @@ import { selectAuthUser } from "@/store/store";
 
 export const getAllEvents = createAsyncThunk(
   "getAllEvents",
-  async (token: string, { rejectWithValue }) => {
+  async (
+    { token, refreshToken }: { token: string; refreshToken: string },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.get(`/events`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          RefreshToken: refreshToken,
         },
       });
 
@@ -34,7 +38,11 @@ export const getAllEvents = createAsyncThunk(
 export const createEvent = createAsyncThunk(
   "createEvent",
   async (
-    { eventData, token }: { eventData: EventCreate; token: string },
+    {
+      eventData,
+      token,
+      refreshToken,
+    }: { eventData: EventCreate; token: string; refreshToken: string },
     { rejectWithValue }
   ) => {
     try {
@@ -50,6 +58,7 @@ export const createEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
           },
         }
       );
@@ -73,7 +82,10 @@ export const createEvent = createAsyncThunk(
 
 export const updateEvent = createAsyncThunk(
   "updateEvent",
-  async (updateData: Event, { rejectWithValue }) => {
+  async (
+    { updateData, refreshToken }: { updateData: Event; refreshToken: string },
+    { rejectWithValue }
+  ) => {
     try {
       const { token } = useSelector(selectAuthUser);
 
@@ -84,6 +96,7 @@ export const updateEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
           },
         }
       );

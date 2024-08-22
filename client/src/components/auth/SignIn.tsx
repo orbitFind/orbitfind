@@ -28,6 +28,7 @@ const SignIn = () => {
             }
 
             const token = await user.getIdToken();
+            const refreshToken = user.refreshToken;
 
             dispatch(setAuthUser({
                 authUser: {
@@ -35,10 +36,11 @@ const SignIn = () => {
                     email: user.email,
                     displayName: user.displayName,
                 },
-                token: token
+                token: token,
+                refreshToken: refreshToken
             }));
 
-            localStorage.setItem('authUser', JSON.stringify({ user, token }));
+            localStorage.setItem('authUser', JSON.stringify({ user, token, refreshToken }));
 
             setSuccess(true);
             setError(null);

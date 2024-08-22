@@ -35,6 +35,7 @@ const SignUp = () => {
             }
 
             const token = await user.getIdToken();
+            const refreshToken = user.refreshToken;
 
             dispatch(setAuthUser({
                 authUser: {
@@ -43,9 +44,10 @@ const SignUp = () => {
                     displayName: user.displayName,
                 },
                 token,
+                refreshToken
             }));
 
-            localStorage.setItem('authUser', JSON.stringify({ user, token }));
+            localStorage.setItem('authUser', JSON.stringify({ user, token, refreshToken }));
 
             setEmail('');
             setPassword('');

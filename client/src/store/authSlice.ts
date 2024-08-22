@@ -6,16 +6,22 @@ export const authSlice = createSlice({
   initialState: {
     authUser: null,
     token: null,
+    refreshToken: null,
   } as AuthState,
   reducers: {
     setAuthUser(
       state,
-      action: PayloadAction<{ authUser: AuthUser; token: string }>
+      action: PayloadAction<{
+        authUser: AuthUser;
+        token: string;
+        refreshToken: string;
+      }>
     ) {
-      const { authUser, token } = action.payload;
+      const { authUser, token, refreshToken } = action.payload;
 
       state.authUser = authUser;
       state.token = token;
+      state.refreshToken = refreshToken;
     },
     clearAuthUser(state) {
       state.authUser = null;

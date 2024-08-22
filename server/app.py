@@ -1,4 +1,11 @@
+
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 from datetime import date, datetime
+import os
 from flask import Flask, request, jsonify
 from config import Config
 from models import db, User, Event, Badge, Achievement
@@ -8,10 +15,14 @@ from firebase_setup import initialize_firebase
 from flask_migrate import Migrate
 import uuid
 from flask_cors import CORS
-
 from utils import verify_user
+from werkzeug.exceptions import NotFound
+
 
 app = Flask(__name__)
+
+app.config['FIREBASE_WEB_API_KEY'] = os.getenv('FIREBASE_WEB_API_KEY')
+
 CORS(app)
 app.config.from_object(Config)
 db.init_app(app)
@@ -72,40 +83,115 @@ def sync_users():
                 db.session.add(new_user)
                 db.session.commit()
 
+        # To retrieve this on the frontend, do response.json() and then get the key 'message'.
         return jsonify({'message': 'Users synced successfully'}), 200
-
     except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
         return jsonify({'error': str(e)}), 500
 
 # Read all users
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([{'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email} for user in users]), 200
+    # To retrieve this on the frontend, do response.json() and then get the key 'data'.
+    return jsonify({"data": [{'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email} for user in users]}), 200
 
 # Read one user
 @app.route('/users/<string:id>', methods=['GET'])
 def get_user(id):
-    user = User.query.get_or_404(id)
-    return jsonify({'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email}), 200
+    try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
+        
+        # ! Commented out for testing purposes
+        # if user.user_id != id:
+        #     return jsonify({'error': 'User is not authorized to view this user'}), 403
+        
+        user = User.query.get_or_404(id)
+        return jsonify({'user_id': user.user_id, 'username': user.username, "full_name": user.full_name, 'email': user.email}), 200
+    except NotFound:
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Finish user (put the full name, which firebase does not provide - firebase provides email, username and user_id)
 @app.route('/users/<string:id>', methods=['PUT'])
 def finish_user(id):
-    sync_users()
-    data = request.get_json()
-    user = User.query.get_or_404(id)
-    user.full_name = data['full_name']
-    db.session.commit()
-    return jsonify({'message': 'User updated successfully'}), 201
+    try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
+        
+        # ! Commented out for testing purposes
+        # if user.user_id != id:
+        #     return jsonify({'error': 'User is not authorized to update this user'}), 403
+
+        data = request.get_json()
+        user = User.query.get_or_404(id)
+        
+        if 'full_name' in data:
+            user.full_name = data['full_name']
+        if 'email' in data:
+            user.email = data['email']
+        if 'username' in data:
+            user.username = data['username']
+        if 'password' in data:
+            user.password = data['password']
+
+        db.session.commit()
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'data' and 'message'.
+        return jsonify({
+            'data': user,
+            'message': 'User updated successfully'
+            }), 201
+    except NotFound:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': str(e)}), 500
 
 # Delete user
 @app.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
-    user = User.query.get_or_404(id)
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'message': 'User deleted successfully'}), 200
+    try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': 'Authentication failed'}), 401
+        
+        # ! Commented out for testing purposes
+        # if user.user_id != id:
+        #     return jsonify({'error': 'User is not authorized to delete this user'}), 403
+        
+        user = User.query.get_or_404(id)
+        db.session.delete(user)
+        db.session.commit()
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'message'.
+        return jsonify({'message': 'User deleted successfully'}), 200
+    except NotFound:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': str(e)}), 500
 
 # --- EVENTS ---
 
@@ -113,11 +199,14 @@ def delete_user(id):
 @app.route('/events', methods=['POST'])
 def create_event():
     try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
         # Verify the user
-        auth_header = request.headers.get('Authorization')
-        user = verify_user(auth_header)
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
         
         # After successfully verifying the user, we can create the event
         data = request.get_json()
@@ -144,9 +233,11 @@ def create_event():
             new_event.badges = data["badges"]
         db.session.add(new_event)
         db.session.commit()
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'message'.
         return jsonify({'message': 'Event created successfully'}), 201
     except Exception as e:
-        print(e)
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
         return jsonify({'error': str(e)}), 500
         
 
@@ -154,10 +245,14 @@ def create_event():
 @app.route('/events/<int:id>', methods=['PUT'])
 def update_event(id):
     try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
         # Verify the user
-        user = verify_user(request)
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
 
         data = request.get_json()
         event = Event.query.get_or_404(id)
@@ -188,49 +283,89 @@ def update_event(id):
             except ValueError:
                 return jsonify({"error": "Invalid date format for date_end"}), 400
         db.session.commit()
-        return jsonify({'message': 'Event updated successfully'}), 201
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'data' and 'message'.
+        return jsonify({
+            'data': event,
+            'message': 'Event updated successfully'
+            }), 201
+    except NotFound:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': 'Event not found'}), 404
     except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
         return jsonify({'error': str(e)}), 500
 
 @app.route('/events', methods=['GET'])
 def get_events():
-    events = Event.query.all()
-    return jsonify([
-        {'event_id': event.event_id,
-         'name': event.name,
-         "description": event.description,
-         'badges': [badge.badge_id for badge in event.badges],
-         'region': event.region,
-         'location': event.location,
-         'people': len(event.signed_up_users),
-         'status': event.status,
-         'tags': event.tags,
-         'date_start': event.date_start,
-         'date_end': event.date_end,
-        } for event in events])
+    try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
+
+        events = Event.query.all()
+        # To retrieve this on the frontend, do response.json() and then get the key 'data'.
+        return jsonify({"data": events}), 200
+    except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/events/<int:id>', methods=['GET'])
 def get_event(id):
-    event = Event.query.get_or_404(id)
-    return jsonify({'event_id': event.event_id, 'name': event.name, "description": event.description, 'status': event.status, 'date_start': event.date_start, 'date_end': event.date_end})
+    try: 
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': "Authentication failed"}), 401
+
+        event = Event.query.get_or_404(id)
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'data'.
+        return jsonify({"data": event}), 200
+    except NotFound:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': 'Event not found'}), 404
+    except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/events/<int:id>', methods=['DELETE'])
 def delete_event(id):
     try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('RefreshToken')
+
         # Verify user
-        user = verify_user(request)
-        if user is None:
-            return jsonify({'error': 'User not found'}), 404
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify({'error': 'Authentication failed'}), 401
+        
+        event = Event.query.get_or_404(id)
         
         # Check if the user is the host.
-        if user.user_id not in [host.user_id for host in event.hosts]:
+        if user.user_id not in [host.user_id for host in event["hosted_users"]]:
             return jsonify({'error': 'User is not the host of the event'}), 403
 
-        event = Event.query.get_or_404(id)
         db.session.delete(event)
         db.session.commit()
+
+        # To retrieve this on the frontend, do response.json() and then get the key 'message'.
         return jsonify({'message': 'Event deleted successfully'}), 200
+    except NotFound:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
+        return jsonify({'error': 'Event not found'}), 404
     except Exception as e:
+        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
         return jsonify({'error': str(e)}), 500
 
 # --- BADGES ---

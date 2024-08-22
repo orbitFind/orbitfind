@@ -1,19 +1,20 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { api } from "./base";
-import { selectAuthUser } from "@/store/store";
-import { useSelector } from "react-redux";
 import { User } from "@/constants/interfaces";
 
 export const getUser = createAsyncThunk(
   "getUser",
-  async (_, { rejectWithValue }) => {
+  async (
+    { token, refreshToken }: { token: string; refreshToken: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { token } = useSelector(selectAuthUser);
       const response = await api.get("/users/me", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          RefreshToken: refreshToken,
         },
       });
       const headers = { ...response.headers };
@@ -33,13 +34,20 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   "updateUser",
-  async (userData: User, { rejectWithValue }) => {
+  async (
+    {
+      userData,
+      token,
+      refreshToken,
+    }: { userData: User; token: string; refreshToken: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { token } = useSelector(selectAuthUser);
       const response = await api.put("/users/me", userData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          RefreshToken: refreshToken,
         },
       });
       const headers = { ...response.headers };
@@ -59,13 +67,16 @@ export const updateUser = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   "deleteUser",
-  async (_, { rejectWithValue }) => {
+  async (
+    { token, refreshToken }: { token: string; refreshToken: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { token } = useSelector(selectAuthUser);
       const response = await api.delete("/users/me", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          RefreshToken: refreshToken,
         },
       });
       const headers = { ...response.headers };

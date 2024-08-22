@@ -28,6 +28,7 @@ export interface AuthUser {
 export interface AuthState {
   authUser: AuthUser | null;
   token: string | null;
+  refreshToken: string | null;
 }
 
 export interface Event {
@@ -65,15 +66,6 @@ export interface EventState {
 export interface Badge {
   badge_id: string;
   name: string;
-}
-export interface AuthUser {
-  uid: string;
-  email: string;
-  displayName: string;
-}
-
-export interface AuthState {
-  authUser: AuthUser | null;
 }
 
 export interface Achievement {
