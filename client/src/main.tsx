@@ -10,6 +10,7 @@ import Landing from '@/pages/LandingPage';
 import AuthPage from '@/pages/AuthenticationPage';
 import EventsPage from '@/pages/EventsPage';
 import UserProfile from './pages/UserProfile';
+import EventsManage from './pages/EventsManage';
 
 import store from '@/store/store';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -31,6 +32,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/create" element={<CreateEventsPage />} />
               <Route path="/profile" element={<UserProfile />} />
+              <Route path="/admin" element={<EventsManage />} />
+
             </Route>
           </Route>
         </Routes>
