@@ -7,23 +7,26 @@ import { selectAuthUser } from "@/store/store";
 
 export const getAllEvents = createAsyncThunk(
   "getAllEvents",
-  async (
-    { token, refreshToken }: { token: string; refreshToken: string },
-    { rejectWithValue }
-  ) => {
+  async (_, { rejectWithValue }) => {
     try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+      const { token, refreshToken } = JSON.parse(authUser);
+
       const response = await api.get(`/events`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          RefreshToken: refreshToken,
+          Refreshtoken: refreshToken,
         },
       });
 
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Error fetching events: ", error.message);
+        console.error("Error fetching events: ", error.response?.data);
         return rejectWithValue(error.response?.data);
       }
 

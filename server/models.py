@@ -63,6 +63,9 @@ class Event(db.Model):
     completed_users = db.relationship('User', secondary=user_completed_events, back_populates='completed_events', overlaps="completed_events")
     hosted_users = db.relationship('User', secondary=user_hosted_events, back_populates='hosted_events', overlaps="hosted_events")
 
+    def to_dict(self):
+        return {key: value for key, value in self.__dict__.items() if not key.startswith('_')}
+
 class Badge(db.Model):
     __tablename__ = 'badges'
     badge_id = db.Column(db.String(255), primary_key=True, unique=True, nullable=False)

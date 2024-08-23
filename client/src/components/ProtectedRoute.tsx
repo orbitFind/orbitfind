@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { setAuthUser } from '@/store/authSlice';
 import SignOut from '@/components/auth/SignOut';
@@ -10,6 +10,7 @@ const ProtectedRoute: React.FC = () => {
     const { authUser } = useSelector(selectAuthUser);
     const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(true); // Add loading state
+    const navigate = useNavigate();
 
     useEffect(() => {
         const assignAuth = async () => {
@@ -21,7 +22,13 @@ const ProtectedRoute: React.FC = () => {
 
                 const storedAuthUser = localStorage.getItem('authUser');
                 if (storedAuthUser) {
-                    const { user, token } = JSON.parse(storedAuthUser);
+                    const { user, token, refreshToken } = await JSON.parse(storedAuthUser);
+
+                    if (!user || !token || !refreshToken) {
+                        navigate('/auth');
+                        console.error('Invalid user object: ' + storedAuthUser);
+                        throw new Error('Invalid user object');
+                    }
 
                     // Restore the user and token to the Redux store
                     dispatch(setAuthUser({
@@ -29,7 +36,7 @@ const ProtectedRoute: React.FC = () => {
                             uid: user.uid,
                             email: user.email,
                             displayName: user.displayName
-                        }, token
+                        }, token, refreshToken
                     }));
                 }
             } catch (error) {

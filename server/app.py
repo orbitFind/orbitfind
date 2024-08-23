@@ -200,13 +200,13 @@ def delete_user(id):
 def create_event():
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
+        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
         if not user:
-            return jsonify({'error': "Authentication failed"}), 401
+            return jsonify("Authentication failed"), 401
         
         # After successfully verifying the user, we can create the event
         data = request.get_json()
@@ -238,7 +238,7 @@ def create_event():
         return jsonify({'message': 'Event created successfully'}), 201
     except Exception as e:
         # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': str(e)}), 500
+        return jsonify(str(e)), 500
         
 
 # Update event
@@ -246,20 +246,20 @@ def create_event():
 def update_event(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
+        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
         if not user:
-            return jsonify({'error': "Authentication failed"}), 401
+            return jsonify("Authentication failed"), 401
 
         data = request.get_json()
         event = Event.query.get_or_404(id)
 
         # Check if the user is the host.
         if user.user_id not in [host.user_id for host in event.hosts]:
-            return jsonify({'error': 'User is not the host of the event'}), 403
+            return jsonify("You're not the host of the event"), 403
 
         # Update the event
         if 'name' in data:
@@ -274,99 +274,85 @@ def update_event(id):
                 date_start_str = date_start.strftime('%Y-%m-%d %H:%M:%S')
                 event.date_start = date_start_str
             except ValueError:
-                return jsonify({"error": "Invalid date format for date_start"}), 400
+                return jsonify("Invalid date format for Start Date"), 400
         if 'date_end' in data:
             try:
                 date_end = datetime.strptime(data['date_end'], '%Y-%m-%dT%H:%M:%S.%fZ')
                 date_end_str = date_end.strftime('%Y-%m-%d %H:%M:%S')
                 event.date_end = date_end_str
             except ValueError:
-                return jsonify({"error": "Invalid date format for date_end"}), 400
+                return jsonify("Invalid date format for End Date"), 400
         db.session.commit()
 
-        # To retrieve this on the frontend, do response.json() and then get the key 'data' and 'message'.
-        return jsonify({
-            'data': event,
-            'message': 'Event updated successfully'
-            }), 201
+        return jsonify(event.to_dict()), 201
     except NotFound:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': 'Event not found'}), 404
+        return jsonify('Event not found'), 404
     except Exception as e:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': str(e)}), 500
+        return jsonify(str(e)), 500
 
 @app.route('/events', methods=['GET'])
 def get_events():
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
+        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
         if not user:
-            return jsonify({'error': "Authentication failed"}), 401
+            return jsonify("Authentication failed"), 401
 
         events = Event.query.all()
-        # To retrieve this on the frontend, do response.json() and then get the key 'data'.
-        return jsonify({"data": events}), 200
+        return jsonify([event.to_dict() for event in events]), 200
     except Exception as e:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': str(e)}), 500
+        return jsonify(str(e)), 500
 
 @app.route('/events/<int:id>', methods=['GET'])
 def get_event(id):
     try: 
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
+        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
         if not user:
-            return jsonify({'error': "Authentication failed"}), 401
+            return jsonify('Authentication failed'), 401
 
         event = Event.query.get_or_404(id)
 
-        # To retrieve this on the frontend, do response.json() and then get the key 'data'.
-        return jsonify({"data": event}), 200
+        return jsonify(event.to_dict()), 200
     except NotFound:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': 'Event not found'}), 404
+        return jsonify("Event not found"), 404
     except Exception as e:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': str(e)}), 500
+        return jsonify(str(e)), 500
 
 @app.route('/events/<int:id>', methods=['DELETE'])
 def delete_event(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
+        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
         if not user:
-            return jsonify({'error': 'Authentication failed'}), 401
+            return jsonify('Authentication failed'), 401
         
         event = Event.query.get_or_404(id)
         
         # Check if the user is the host.
         if user.user_id not in [host.user_id for host in event["hosted_users"]]:
-            return jsonify({'error': 'User is not the host of the event'}), 403
+            return jsonify('User is not the host of the event'), 403
 
         db.session.delete(event)
         db.session.commit()
 
-        # To retrieve this on the frontend, do response.json() and then get the key 'message'.
-        return jsonify({'message': 'Event deleted successfully'}), 200
+        return jsonify('Event deleted successfully'), 200
     except NotFound:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': 'Event not found'}), 404
+        return jsonify("Event not found"), 404
     except Exception as e:
-        # To retrieve this on the frontend, do response.json() and then get the key 'error'.
-        return jsonify({'error': str(e)}), 500
+        return jsonify(str(e)), 500
 
 # --- BADGES ---
 

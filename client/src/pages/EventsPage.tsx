@@ -11,7 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { categories, regions } from "@/constants"; // Assuming events are defined in constants
 import { useNavigate } from "react-router-dom";
-import { selectAuthUser, selectEvents, useAppDispatch } from "@/store/store";
+import { selectEvents, useAppDispatch } from "@/store/store";
 import { getAllEvents } from "@/api/events";
 import { useSelector } from "react-redux";
 import { Event } from "@/constants/interfaces";
@@ -27,10 +27,9 @@ const EventsPage = () => {
 
   const dispatch = useAppDispatch();
   const { events } = useSelector(selectEvents)
-  const { token } = useSelector(selectAuthUser)
   useEffect(() => {
     const fetchEvents = async () => {
-      await dispatch(getAllEvents(token!));
+      await dispatch(getAllEvents());
     }
 
     fetchEvents();
