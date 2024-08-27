@@ -228,7 +228,7 @@ def create_event():
             location=data["location"],
             tags=list(data["tags"]),
             status=data["status"],
-            hosted_users=[user])
+            hosted_users=[user.user_id])
         if "badges" in data:
             new_event.badges = data["badges"]
         db.session.add(new_event)
@@ -303,6 +303,25 @@ def get_events():
             return jsonify("Authentication failed"), 401
 
         events = Event.query.all()
+
+        return jsonify([event.to_dict() for event in events]), 200
+    except Exception as e:
+        return jsonify(str(e)), 500
+    
+@app.route('/events/hosted', methods=['GET'])
+def get_hosted_events():
+    try:
+        auth_token = request.headers.get('Authorization')
+        refresh_token = request.headers.get('Refreshtoken')
+
+        # Verify the user
+        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+
+        if not user:
+            return jsonify('Authentication failed'), 401
+
+        events = Event.query.filter(Event.hosted_users.any(user_id=user.user_id)).all()
+
         return jsonify([event.to_dict() for event in events]), 200
     except Exception as e:
         return jsonify(str(e)), 500
