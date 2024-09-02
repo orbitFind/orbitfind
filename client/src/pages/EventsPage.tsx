@@ -3,7 +3,7 @@ import {
   FaSearch,
   FaCalendarAlt,
   FaHome,
-  FaUsers,
+  // FaUsers,
   FaTimes,
   FaMapMarkerAlt,
   FaCalendar,
@@ -12,34 +12,73 @@ import { motion, AnimatePresence } from "framer-motion";
 import { categories, regions } from "@/constants"; // Assuming events are defined in constants
 import { useNavigate } from "react-router-dom";
 import { selectEvents, useAppDispatch } from "@/store/store";
-import { getAllEvents } from "@/api/events";
+import { getAllEvents, RSVPUserInEvent } from "@/api/events";
 import { useSelector } from "react-redux";
 import { Event } from "@/constants/interfaces";
+import ConfirmModal from "@/components/ui/confirmModal";
+import { useToast } from "@/components/ui/use-toast";
 
 const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [showPeople, setShowPeople] = useState(false);
+  // const [showPeople, setShowPeople] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [inputTag, setInputTag] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { toast } = useToast();
+
+  // RSVP Component
+  const [selectedRSVPEvent, setSelectedRSVPEvent] = useState<Event | null>(null);
+  const [RSVPModalOpen, setRSVPModalOpen] = useState<boolean>(false);
+
+  const openRSVPModal = (event: Event) => {
+    console.log(event.signed_up_users)
+    setSelectedRSVPEvent(event);
+    setRSVPModalOpen(true);
+  }
+  const closeRSVPModal = () => {
+    setSelectedRSVPEvent(null);
+    setRSVPModalOpen(false);
+  };
+
+  const authUser = localStorage.getItem("authUser") || null;
+
+  if (!authUser) {
+    console.error("No user is logged in.");
+    return;
+  }
+
+  const { user } = JSON.parse(authUser);
+
   const dispatch = useAppDispatch();
   const { events } = useSelector(selectEvents)
+  const fetchEvents = async () => {
+    await dispatch(getAllEvents());
+  }
   useEffect(() => {
-    const fetchEvents = async () => {
-      await dispatch(getAllEvents());
-    }
 
     fetchEvents();
   }, []);
+
+  const handleRSVP = () => {
+    dispatch(RSVPUserInEvent({
+      ...selectedRSVPEvent!,
+      people: (selectedRSVPEvent?.people || 0) + 1,
+      signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user]
+    }));
+
+    toast({ title: "RSVP'd", description: `You have RSVP'd to ${selectedRSVPEvent?.name}`, variant: "default" });
+    closeRSVPModal();
+    fetchEvents();
+  }
 
   const navigate = useNavigate();
 
   const handleMoreInfo = (event: any) => {
     setSelectedEvent(event);
-    setShowPeople(false);
+    // setShowPeople(false);
   };
 
   const handleClose = () => {
@@ -259,13 +298,18 @@ const EventsPage = () => {
 
         {/* Events List */}
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-          {displayedEvents.length > 0 ? (
-            displayedEvents.map((event) => (
+          {displayedEvents.filter(event => event.status !== "completed").length > 0 ? (
+            displayedEvents.filter(event => event.status !== "completed").map((event) => (
               <motion.div
                 key={event.event_id}
                 className="bg-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
                 whileHover={{ scale: 1.02 }} // Scale effect on hover
               >
+                {event.status === "ongoing" && (
+                  <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
+                    • LIVE
+                  </div>
+                )}
                 <div>
                   <h3 className="text-xl font-semibold text-[#E5E7EB] mb-2">
                     {event.name}
@@ -293,9 +337,21 @@ const EventsPage = () => {
                   >
                     More Info
                   </button>
-                  <button className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] transition duration-200 ease-in-out">
-                    RSVP
-                  </button>
+                  {!event.hosted_users?.some(u => u === user.uid) && event.signed_up_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                      RSVP'd
+                    </button>
+                  )}
+                  {!event.hosted_users?.some(u => u === user.uid) && !event.signed_up_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] transition duration-200 ease-in-out" onClick={() => openRSVPModal(event)}>
+                      RSVP
+                    </button>
+                  )}
+                  {event.hosted_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                      Hosted
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))
@@ -357,14 +413,14 @@ const EventsPage = () => {
               {/* People Going */}
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-[#E5E7EB]">
-                  People Going
+                  {selectedEvent.signed_up_users.length} People Going
                 </h3>
-                <button
+                {/* <button
                   onClick={() => setShowPeople(!showPeople)}
                   className="flex items-center space-x-2 text-[#9290C3] underline hover:text-[#E5E7EB] transition duration-200 ease-in-out"
                 >
                   <FaUsers className="mr-2" />
-                  <span>{selectedEvent.people} People Going</span>
+                  <span>{selectedEvent.signed_up_users.length} People Going</span>
                 </button>
                 {showPeople && (
                   <div className="mt-4 max-h-40 overflow-y-auto">
@@ -384,12 +440,22 @@ const EventsPage = () => {
                       )
                     )}
                   </div>
-                )}
+                )} */}
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+      <ConfirmModal
+        key="rsvp-modal"
+        isOpen={RSVPModalOpen}
+        title="RSVP Confirmation"
+        description="Are you sure you want to RSVP to this event?"
+        confirmText="RSVP"
+        cancelText="Cancel"
+        onConfirm={handleRSVP}
+        onCancel={closeRSVPModal}
+      />
     </div>
   );
 };

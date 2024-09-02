@@ -5,20 +5,24 @@ import { User } from "@/constants/interfaces";
 
 export const getUser = createAsyncThunk(
   "getUser",
-  async (
-    { token, refreshToken }: { token: string; refreshToken: string },
-    { rejectWithValue }
-  ) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/users/me", {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken, user } = JSON.parse(authUser);
+
+      const response = await api.get(`/users/${user.uid}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           RefreshToken: refreshToken,
         },
       });
-      const headers = { ...response.headers };
-      return { ...response.data, headers };
+
+      return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error fetching user: ", error.message);
@@ -34,16 +38,16 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   "updateUser",
-  async (
-    {
-      userData,
-      token,
-      refreshToken,
-    }: { userData: User; token: string; refreshToken: string },
-    { rejectWithValue }
-  ) => {
+  async (userData: User, { rejectWithValue }) => {
     try {
-      const response = await api.put("/users/me", userData, {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken, user } = JSON.parse(authUser);
+
+      const response = await api.put(`/users/${user.uid}`, userData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -84,6 +88,25 @@ export const deleteUser = createAsyncThunk(
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error deleting user: ", error.message);
+        return rejectWithValue(error.response?.data);
+      }
+
+      return rejectWithValue(
+        `An unknown error has occurred. Please try again.\n${error}`
+      );
+    }
+  }
+);
+
+export const syncUsers = createAsyncThunk(
+  "syncUsers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/sync_users");
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error syncing users: ", error.message);
         return rejectWithValue(error.response?.data);
       }
 

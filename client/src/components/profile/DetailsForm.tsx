@@ -1,15 +1,24 @@
 import { updateUser } from "@/api/user";
-import { useAppDispatch, selectUser } from "@/store/store";
-import { setUsername, setEmail, setBio, setProfilePic } from "@/store/userSlice";
+import { useAppDispatch } from "@/store/store";
 import { motion } from "framer-motion";
-import React, { ChangeEvent, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { FaCamera, FaUser, FaEnvelope } from "react-icons/fa";
-import { useSelector } from "react-redux";
 import CropperModal from "./CropperModal";
+import { User } from "@/constants/interfaces";
 
-const DetailsForm: React.FC = () => {
+interface DetailsFormProps {
+    user: User;
+    fetchUser: () => void;
+}
+
+const DetailsForm: React.FC<DetailsFormProps> = ({ user, fetchUser }) => {
     const dispatch = useAppDispatch();
-    const { user } = useSelector(selectUser);
+
+    const [bio, setBio] = useState<string>("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState<string>("");
+    const [profilePic, setProfilePic] = useState<string>("");
+
 
     const [imagePreview, setImagePreview] = useState("");
     const [showCropper, setShowCropper] = useState(false);
@@ -18,6 +27,27 @@ const DetailsForm: React.FC = () => {
     const [cropper, setCropper] = useState<Cropper | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const cropperRef = useRef<HTMLImageElement | null>(null);
+
+    useEffect(() => {
+        if (user) {
+            // console.log(user);
+            setBio(user.bio);
+            setUsername(user.username);
+            setEmail(user.email);
+            setProfilePic(user.profilePic);
+        }
+    }, [user]);
+
+    const handleIsEditing = (value: boolean) => {
+        setIsEditing(value);
+        if (user) {
+            // console.log(user);
+            setBio(user.bio);
+            setUsername(user.username);
+            setEmail(user.email);
+            setProfilePic(user.profilePic);
+        }
+    }
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -34,14 +64,14 @@ const DetailsForm: React.FC = () => {
     const handleCrop = () => {
         if (cropper) {
             const canvas = cropper.getCroppedCanvas();
-            dispatch(setProfilePic(canvas.toDataURL()));
+            setProfilePic(canvas.toDataURL());
             setShowCropper(false);
         }
     };
 
-    const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => dispatch(setUsername(e.target.value));
-    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => dispatch(setEmail(e.target.value));
-    const handleBioChange = (e: ChangeEvent<HTMLTextAreaElement>) => dispatch(setBio(e.target.value));
+    const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+    const handleBioChange = (e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value);
 
     const handleCropperInit = (instance: Cropper) => {
         setCropper(instance);
@@ -49,11 +79,19 @@ const DetailsForm: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(updateUser(user)).then((_) => {
+        dispatch(updateUser({
+            ...user!,
+            bio,
+            username,
+            email,
+            profilePic
+        })).then((_) => {
             setIsEditing(false);
         }).catch(error => {
             console.log(error)
         })
+
+        fetchUser();
     }
 
     const cropperModalProps = {
@@ -71,16 +109,19 @@ const DetailsForm: React.FC = () => {
                 {/* Profile Picture */}
                 <div className="relative mb-6">
                     <img
-                        src={user.profilePic}
+                        src={profilePic}
                         alt="Profile"
                         className="w-32 h-32 rounded-full border-4 border-[#535C91] object-cover shadow-lg transition-transform duration-300 transform hover:scale-105"
                     />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute bottom-0 right-0 p-2 bg-[#9290C3] rounded-full shadow-md transition-transform duration-300 transform hover:scale-110"
-                    >
-                        <FaCamera className="text-white text-lg" />
-                    </button>
+                    {isEditing && (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute bottom-0 right-0 p-2 bg-[#9290C3] rounded-full shadow-md transition-transform duration-300 transform hover:scale-110"
+                        >
+                            <FaCamera className="text-white text-lg" />
+                        </button>
+                    )}
+
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -93,8 +134,8 @@ const DetailsForm: React.FC = () => {
                 {/* User Details, changed into a form, so that you can update everything at once. */}
                 <div className="w-full space-y-4">
                     {[
-                        { label: "Username", icon: <FaUser />, value: user.username, onChange: handleUsernameChange },
-                        { label: "Email", icon: <FaEnvelope />, value: user.email, onChange: handleEmailChange },
+                        { label: "Username", icon: <FaUser />, value: username, onChange: handleUsernameChange },
+                        { label: "Email", icon: <FaEnvelope />, value: email, onChange: handleEmailChange },
                     ].map(({ label, icon, value, onChange }, index) => (
                         <motion.div
                             key={index}
@@ -135,13 +176,13 @@ const DetailsForm: React.FC = () => {
                         <label className="text-[#E5E7EB] text-sm mb-1">Bio</label>
                         {isEditing ? (
                             <textarea
-                                value={user.bio}
+                                value={bio ?? ""}
                                 onChange={(e) => handleBioChange(e)}
                                 className="bg-[#070F2B] p-2 rounded-lg border border-[#535C91] w-full h-32 text-[#E5E7EB] focus:outline-none"
                             />
                         ) : (
                             <p className="bg-[#070F2B] p-2 rounded-lg border border-[#535C91] text-[#E5E7EB]">
-                                {user.bio}
+                                {bio}
                             </p>
                         )}
                     </motion.div>
@@ -162,7 +203,7 @@ const DetailsForm: React.FC = () => {
 
                         {!isEditing &&
                             <motion.button
-                                onClick={() => setIsEditing(true)}
+                                onClick={() => handleIsEditing(true)}
                                 className="bg-[#9290C3] text-white py-2 px-4 rounded transition-colors duration-300 hover:bg-[#E5E7EB] hover:text-[#1B1A55]"
                                 initial={{ scale: 1 }}
                                 whileHover={{ scale: 1.05 }}

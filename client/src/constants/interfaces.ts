@@ -3,7 +3,7 @@ export interface User {
   email: string;
   password: string;
   username: string;
-  fullName: string;
+  full_name: string;
   bio: string;
   profilePic: string;
   signedUpTo: Event[]; // Add the events property to the User interface
@@ -14,9 +14,8 @@ export interface User {
 }
 
 export interface UserState {
-  user: User;
+  user: User | null;
   fetchStatus: "success" | "loading" | "error" | null;
-  error: string | null;
 }
 
 export interface AuthUser {
@@ -35,7 +34,6 @@ export interface Event {
   event_id: number;
   name: string;
   description: string;
-  badges?: Badge[];
   region: string;
   location: string;
   category: string;
@@ -44,7 +42,12 @@ export interface Event {
   tags: string[];
   date_start: string; // YYYY-MM-DD
   date_end: string; // YYYY-MM-DD
-  hosted_by: string;
+
+  badges?: Badge[];
+
+  signed_up_users: User[];
+  completed_users: User[];
+  hosted_users: User[];
 }
 
 export interface EventCreate {
@@ -66,6 +69,7 @@ export interface EventState {
 export interface Badge {
   badge_id: string;
   name: string;
+  users: User[];
 }
 
 export interface Achievement {

@@ -22,7 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />}>
+          <Route element={<App />}>
             {/* Public routes */}
             <Route path="/" index element={<Landing />} />
             <Route path="/auth" element={<AuthPage />} />

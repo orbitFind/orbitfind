@@ -6,6 +6,7 @@ import { FaSave } from "react-icons/fa";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/use-toast";
 
 const CreateEventForm = () => {
     const [eventName, setEventName] = useState('');
@@ -18,10 +19,8 @@ const CreateEventForm = () => {
     const [eventEndDate, setEventEndDate] = useState(new Date());
 
     const navigate = useNavigate();
-
+    const { toast } = useToast();
     const dispatch = useAppDispatch();
-    const authUser = localStorage.getItem('authUser');
-    const { token } = JSON.parse(authUser!);
 
     const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEventName(e.target.value);
@@ -31,9 +30,10 @@ const CreateEventForm = () => {
         setEventDescription(e.target.value);
     };
 
-    const handleEventBadgesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setEventBadges([...eventBadges, { badge_id: e.target.value, name: e.target.value }]);
-    };
+    // ! Badges feature is not implemented
+    // const handleEventBadgesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     setEventBadges([...eventBadges, { badge_id: e.target.value, name: e.target.value }]);
+    // };
 
     // const handleSelectBadge = (e: React.ChangeEvent<HTMLSelectElement>) => {
 
@@ -60,6 +60,28 @@ const CreateEventForm = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (eventName === '' || eventDescription === '' || eventRegion === '' || eventLocation === '' || eventTags.length === 0) {
+            toast({ title: 'Error', description: 'Please fill in all fields', variant: "destructive" });
+            return;
+        }
+
+        if (eventStartDate > eventEndDate) {
+            toast({ title: 'Error', description: 'Event start date cannot be after event end date', variant: "destructive" });
+            return;
+        }
+
+        if (eventStartDate < new Date() || eventEndDate < new Date()) {
+            toast({ title: 'Error', description: 'Event start and end date cannot be in the past', variant: "destructive" });
+            return;
+        }
+
+        const authUser = localStorage.getItem('authUser');
+        if (!authUser) {
+            toast({ title: 'Error', description: 'Please log in to create an event', variant: "destructive" });
+            navigate('/auth');
+        }
+        const { token, refreshToken } = JSON.parse(authUser!);
+
         dispatch(createEvent({
             eventData: {
                 name: eventName,
@@ -71,7 +93,7 @@ const CreateEventForm = () => {
                 date_start: eventStartDate.toISOString(),
                 date_end: eventEndDate.toISOString(),
             },
-            token
+            token, refreshToken
         })).then(() => {
             setEventName('');
             setEventDescription('');
@@ -81,11 +103,10 @@ const CreateEventForm = () => {
             setEventTags([]);
             setEventStartDate(new Date());
             setEventEndDate(new Date());
-        }).then(() => {
-            alert('Event created successfully');
+            toast({ title: 'Success', description: 'Event created successfully', variant: "default" });
             navigate('/events');
         }).catch((error) => {
-            alert('Error creating event');
+            toast({ title: 'Error', description: 'An error occurred while creating the event', variant: "destructive" });
             console.error(error);
         });
     };
@@ -103,13 +124,14 @@ const CreateEventForm = () => {
         ));
     };
 
-    const renderBadges = () => {
-        return eventBadges.map((badge, index) => (
-            <div key={index} className="inline-block bg-gray-200 rounded-md px-2 py-1 mr-2 mb-2 text-black">
-                <span>{badge.name}</span>
-            </div>
-        ))
-    }
+    // ! Badges feature is not implemented
+    // const renderBadges = () => {
+    //     return eventBadges.map((badge, index) => (
+    //         <div key={index} className="inline-block bg-gray-200 rounded-md px-2 py-1 mr-2 mb-2 text-black">
+    //             <span>{badge.name}</span>
+    //         </div>
+    //     ))
+    // }
 
     return (
         <form onSubmit={handleSubmit} className="w-10/12 p-8 rounded shadow bg-[#4F8CFF] text-[#E5E7EB] px-4 py-2 rounded-md hover:bg-[#4F8CFF] shadow-md">
@@ -139,7 +161,8 @@ const CreateEventForm = () => {
                     required
                 />
             </div>
-            <div className="mb-4">
+            {/* Badges feature is not implemented */}
+            {/* <div className="mb-4"> 
                 <label htmlFor="eventBadges" className="block text-white-700 font-bold mb-2">
                     Event Badges
                 </label>
@@ -159,7 +182,7 @@ const CreateEventForm = () => {
                         </option>
                     ))}
                 </select>
-            </div>
+            </div> */}
             <div className="mb-4">
                 <label htmlFor="eventRegion" className="block text-white-700 font-bold mb-2">
                     Event Region
@@ -207,9 +230,9 @@ const CreateEventForm = () => {
                     Event Start Date
                 </label>
                 <Input
-                    type="date"
+                    type="datetime-local"
                     id="eventStartDate"
-                    value={eventStartDate.toISOString().split('T')[0]}
+                    value={eventStartDate.toISOString().slice(0, 16)}
                     onChange={handleEventStartDateChange}
                     className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
                     required
@@ -220,9 +243,9 @@ const CreateEventForm = () => {
                     Event End Date
                 </label>
                 <Input
-                    type="date"
+                    type="datetime-local"
                     id="eventEndDate"
-                    value={eventEndDate.toISOString().split('T')[0]}
+                    value={eventEndDate.toISOString().slice(0, 16)}
                     onChange={handleEventEndDateChange}
                     className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
                     required

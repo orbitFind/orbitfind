@@ -5,23 +5,23 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { motion } from 'framer-motion';
 import { useAppDispatch } from '@/store/store';
 import { setAuthUser } from '@/store/authSlice';
+import { syncUsers } from '@/api/user';
+import { useToast } from '../ui/use-toast';
 
 const SignUp = () => {
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            setSuccess(null);
+            toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
             return;
         }
 
@@ -54,19 +54,15 @@ const SignUp = () => {
             setConfirmPassword('');
             setDisplayName('');
 
-            setSuccess('User signed up successfully!');
-            setError(null);
-
-            setTimeout(() => {
-                navigate('/events');
-            }, 1000);
+            toast({ title: 'Sign Up', description: 'User signed up successfully', variant: 'default' });
+            dispatch(syncUsers())
+            navigate('/events');
         } catch (error) {
             if (error instanceof Error) {
-                setError(error.message);
+                toast({ title: 'Error', description: error.message, variant: 'destructive' });
             } else {
-                setError('An unknown error occurred');
+                toast({ title: 'Error', description: 'An unknown error has occurred', variant: 'destructive' });
             }
-            setSuccess(null);
         }
     };
 
@@ -112,17 +108,6 @@ const SignUp = () => {
                     Sign Up
                 </motion.button>
 
-                {error && (
-                    <motion.p className="text-red-500 text-center mt-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                        {error}
-                    </motion.p>
-                )}
-
-                {success && (
-                    <motion.p className="text-green-500 text-center mt-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                        {success}
-                    </motion.p>
-                )}
             </form>
         </>
     );
