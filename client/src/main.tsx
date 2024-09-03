@@ -9,9 +9,12 @@ import { Provider } from 'react-redux';
 import Landing from '@/pages/LandingPage';
 import AuthPage from '@/pages/AuthenticationPage';
 import EventsPage from '@/pages/EventsPage';
+import UserProfile from './pages/UserProfile';
+import EventsManage from './pages/EventsManage';
 
 import store from '@/store/store';
 import ProtectedRoute from './components/ProtectedRoute';
+import CreateEventsPage from './pages/CreateEventsPage';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -19,7 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />}>
+          <Route element={<App />}>
             {/* Public routes */}
             <Route path="/" index element={<Landing />} />
             <Route path="/auth" element={<AuthPage />} />
@@ -27,6 +30,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             {/* Protected routes */}
             <Route element={<ProtectedRoute />} >
               <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/create" element={<CreateEventsPage />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/admin" element={<EventsManage />} />
+
             </Route>
           </Route>
         </Routes>

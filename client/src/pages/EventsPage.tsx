@@ -1,28 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaSearch,
   FaCalendarAlt,
   FaHome,
-  FaUsers,
+  // FaUsers,
   FaTimes,
   FaMapMarkerAlt,
   FaCalendar,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { events, categories, regions } from "@/constants"; // Assuming events are defined in constants
+import { categories, regions } from "@/constants"; // Assuming events are defined in constants
+import { useNavigate } from "react-router-dom";
+import { selectEvents, useAppDispatch } from "@/store/store";
+import { getAllEvents, RSVPUserInEvent } from "@/api/events";
+import { useSelector } from "react-redux";
+import { Event } from "@/constants/interfaces";
+import ConfirmModal from "@/components/ui/confirmModal";
+import { useToast } from "@/components/ui/use-toast";
 
 const EventsPage = () => {
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [showPeople, setShowPeople] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  // const [showPeople, setShowPeople] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [inputTag, setInputTag] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { toast } = useToast();
+
+  // RSVP Component
+  const [selectedRSVPEvent, setSelectedRSVPEvent] = useState<Event | null>(null);
+  const [RSVPModalOpen, setRSVPModalOpen] = useState<boolean>(false);
+
+  const openRSVPModal = (event: Event) => {
+    console.log(event.signed_up_users)
+    setSelectedRSVPEvent(event);
+    setRSVPModalOpen(true);
+  }
+  const closeRSVPModal = () => {
+    setSelectedRSVPEvent(null);
+    setRSVPModalOpen(false);
+  };
+
+  const authUser = localStorage.getItem("authUser") || null;
+
+  if (!authUser) {
+    console.error("No user is logged in.");
+    return;
+  }
+
+  const { user } = JSON.parse(authUser);
+
+  const dispatch = useAppDispatch();
+  const { events } = useSelector(selectEvents)
+  const fetchEvents = async () => {
+    await dispatch(getAllEvents());
+  }
+  useEffect(() => {
+
+    fetchEvents();
+  }, []);
+
+  const handleRSVP = () => {
+    dispatch(RSVPUserInEvent({
+      ...selectedRSVPEvent!,
+      people: (selectedRSVPEvent?.people || 0) + 1,
+      signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user]
+    }));
+
+    toast({ title: "RSVP'd", description: `You have RSVP'd to ${selectedRSVPEvent?.name}`, variant: "default" });
+    closeRSVPModal();
+    fetchEvents();
+  }
+
+  const navigate = useNavigate();
+
   const handleMoreInfo = (event: any) => {
     setSelectedEvent(event);
-    setShowPeople(false);
+    // setShowPeople(false);
   };
 
   const handleClose = () => {
@@ -73,36 +129,33 @@ const EventsPage = () => {
     );
   };
 
-  const matchesSearchTerm = (event: any) => {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  const matchesSearchTerm = (event: Event) => {
+    const lowerCaseSearchTerm = searchTerm?.toLowerCase();
     return (
-      event.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.region.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.category.toLowerCase().includes(lowerCaseSearchTerm) ||
-      event.tags.some((tag: string) =>
+      event.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.region?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.category?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      event.tags?.some((tag: string) =>
         tag.toLowerCase().includes(lowerCaseSearchTerm)
       )
     );
   };
 
-  const filteredEvents = events.filter(
-    (event) =>
-      (selectedRegion === "" || event.region === selectedRegion) &&
-      (selectedCategory === "" || event.category === selectedCategory) &&
-      tags.every((tag) => event.tags.includes(tag)) &&
-      matchesSearchTerm(event)
+  const filterEvents = events?.filter((event) =>
+    (selectedRegion === "" || event.region === selectedRegion) &&
+    (selectedCategory === "" || event.category === selectedCategory) &&
+    tags.every((tag) => event.tags.includes(tag)) &&
+    matchesSearchTerm(event)
   );
 
-  const similarEvents = events.filter(
-    (event) =>
-      (selectedRegion === "" || event.region === selectedRegion) &&
-      (selectedCategory === "" || event.category === selectedCategory) &&
-      similarTagMatch(event.tags) &&
-      matchesSearchTerm(event)
+  const getSimilarEvents = events?.filter((event) =>
+    (selectedRegion === "" || event.region === selectedRegion) &&
+    (selectedCategory === "" || event.category === selectedCategory) &&
+    similarTagMatch(event.tags) &&
+    matchesSearchTerm(event)
   );
 
-  const displayedEvents =
-    filteredEvents.length > 0 ? filteredEvents : similarEvents;
+  const displayedEvents = filterEvents.length > 0 ? filterEvents : getSimilarEvents;
 
   const getRandomPeople = (num: number) => {
     return Array.from({ length: num })
@@ -129,13 +182,13 @@ const EventsPage = () => {
           alt="Logo"
         />
         <nav className="space-y-4">
-          <button className="flex items-center space-x-2 p-2 hover:bg-[#535C91] rounded">
+          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded">
             <FaHome className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-[#E5E7EB]">Home</span>
+            <span className="text-lg text-black">Home</span>
           </button>
-          <button className="flex items-center space-x-2 p-2 hover:bg-[#535C91] rounded">
+          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded" onClick={() => navigate("/events/create")}>
             <FaCalendarAlt className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-[#E5E7EB]">Events</span>
+            <span className="text-lg text-black">Create Event</span>
           </button>
         </nav>
       </motion.div>
@@ -245,20 +298,25 @@ const EventsPage = () => {
 
         {/* Events List */}
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-          {displayedEvents.length > 0 ? (
-            displayedEvents.map((event) => (
+          {displayedEvents.filter(event => event.status !== "completed").length > 0 ? (
+            displayedEvents.filter(event => event.status !== "completed").map((event) => (
               <motion.div
-                key={event.id}
+                key={event.event_id}
                 className="bg-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
                 whileHover={{ scale: 1.02 }} // Scale effect on hover
               >
+                {event.status === "ongoing" && (
+                  <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
+                    • LIVE
+                  </div>
+                )}
                 <div>
                   <h3 className="text-xl font-semibold text-[#E5E7EB] mb-2">
-                    {event.title}
+                    {event.name}
                   </h3>
                   <div className="flex items-center text-[#9290C3] mb-4">
                     <FaCalendar className="mr-2" />
-                    <span>{event.date}</span>
+                    <span>{event.date_start}</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-4">
                     {getRandomPeople(3).map((person) => (
@@ -279,9 +337,21 @@ const EventsPage = () => {
                   >
                     More Info
                   </button>
-                  <button className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] transition duration-200 ease-in-out">
-                    RSVP
-                  </button>
+                  {!event.hosted_users?.some(u => u === user.uid) && event.signed_up_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                      RSVP'd
+                    </button>
+                  )}
+                  {!event.hosted_users?.some(u => u === user.uid) && !event.signed_up_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] transition duration-200 ease-in-out" onClick={() => openRSVPModal(event)}>
+                      RSVP
+                    </button>
+                  )}
+                  {event.hosted_users?.some(u => u === user.uid) && (
+                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                      Hosted
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))
@@ -315,7 +385,7 @@ const EventsPage = () => {
                 <FaTimes />
               </button>
               <h2 className="text-2xl font-semibold text-[#E5E7EB] mb-4">
-                {selectedEvent.title}
+                {selectedEvent.name}
               </h2>
               <p className="text-[#E5E7EB] mb-4">{selectedEvent.description}</p>
 
@@ -343,14 +413,14 @@ const EventsPage = () => {
               {/* People Going */}
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-[#E5E7EB]">
-                  People Going
+                  {selectedEvent.signed_up_users.length} People Going
                 </h3>
-                <button
+                {/* <button
                   onClick={() => setShowPeople(!showPeople)}
                   className="flex items-center space-x-2 text-[#9290C3] underline hover:text-[#E5E7EB] transition duration-200 ease-in-out"
                 >
                   <FaUsers className="mr-2" />
-                  <span>{selectedEvent.people} People Going</span>
+                  <span>{selectedEvent.signed_up_users.length} People Going</span>
                 </button>
                 {showPeople && (
                   <div className="mt-4 max-h-40 overflow-y-auto">
@@ -358,9 +428,8 @@ const EventsPage = () => {
                       (_, index) => (
                         <div key={index} className="flex items-center mb-2">
                           <img
-                            src={`https://via.placeholder.com/32x32?text=P${
-                              index + 1
-                            }`}
+                            src={`https://via.placeholder.com/32x32?text=P${index + 1
+                              }`}
                             alt={`Person ${index + 1}`}
                             className="w-8 h-8 rounded-full mr-2"
                           />
@@ -371,12 +440,22 @@ const EventsPage = () => {
                       )
                     )}
                   </div>
-                )}
+                )} */}
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+      <ConfirmModal
+        key="rsvp-modal"
+        isOpen={RSVPModalOpen}
+        title="RSVP Confirmation"
+        description="Are you sure you want to RSVP to this event?"
+        confirmText="RSVP"
+        cancelText="Cancel"
+        onConfirm={handleRSVP}
+        onCancel={closeRSVPModal}
+      />
     </div>
   );
 };

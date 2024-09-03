@@ -5,16 +5,17 @@ import { useState } from 'react';
 import { motion } from "framer-motion"
 import { authSlice } from '@/store/authSlice';
 import { useAppDispatch } from '@/store/store';
+import { useToast } from '../ui/use-toast';
 
 const SignIn = () => {
     const navigate = useNavigate();
     const { setAuthUser } = authSlice.actions;
+
     const dispatch = useAppDispatch();
+    const { toast } = useToast();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<boolean>(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +29,7 @@ const SignIn = () => {
             }
 
             const token = await user.getIdToken();
+            const refreshToken = user.refreshToken;
 
             dispatch(setAuthUser({
                 authUser: {
@@ -35,25 +37,21 @@ const SignIn = () => {
                     email: user.email,
                     displayName: user.displayName,
                 },
-                token: token
+                token: token,
+                refreshToken: refreshToken
             }));
 
-            localStorage.setItem('authUser', JSON.stringify({ user, token }));
+            localStorage.setItem('authUser', JSON.stringify({ user, token, refreshToken }));
 
-            setSuccess(true);
-            setError(null);
-
-            setTimeout(() => {
-                navigate('/events');
-            }, 3000);
+            toast({ title: 'Sign In', description: 'User signed in successfully', variant: 'default' });
+            navigate('/events');
 
         } catch (error) {
             if (error instanceof Error) {
-                setError(error.message);
+                toast({ title: 'Error', description: error.message, variant: 'destructive' });
             } else {
-                setError('An unknown error occurred');
+                toast({ title: 'Error', description: 'An unknown error has occurred', variant: 'destructive' });
             }
-            setSuccess(false);
         }
     };
 
@@ -93,26 +91,6 @@ const SignIn = () => {
                 >
                     Sign In
                 </motion.button>
-                {error && (
-                    <motion.p
-                        className="text-red-500 text-center mt-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.6 }}
-                    >
-                        {error}
-                    </motion.p>
-                )}
-                {success && (
-                    <motion.p
-                        className="text-green-500 text-center mt-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.6 }}
-                    >
-                        User signed in successfully!
-                    </motion.p>
-                )}
             </form>
         </>
     );

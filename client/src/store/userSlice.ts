@@ -1,30 +1,43 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User, UserState } from "@/store/interfaces";
+import { User, UserState } from "@/constants/interfaces";
+import { getUser, updateUser } from "@/api/user";
 // import {} from "@/api/users";
 
 export const userSlice = createSlice({
-  name: "task",
+  name: "user",
   initialState: {
-    user: {},
-    fetchStatus: "",
+    user: null,
+    fetchStatus: null,
   } as UserState,
   reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+    setUser: (state, action) => {
+      state.user = action.payload.user;
+      state.fetchStatus = action.payload.fetchStatus;
     },
   },
-  // extraReducers: (builder) => {
-  //   builder
-  //     .addCase(postNewTask.fulfilled, (state, action) => {
-  //       state.fetchStatus = "success";
-  //     })
-  //     .addCase(postNewTask.pending, (state) => {
-  //       state.fetchStatus = "loading";
-  //     })
-  //     .addCase(postNewTask.rejected, (state) => {
-  //       state.fetchStatus = "error";
-  //     });
-  // },
+  extraReducers: (builder) => {
+    builder
+      .addCase(getUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.fetchStatus = "success";
+        state.user = action.payload;
+      })
+      .addCase(getUser.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(getUser.rejected, (state) => {
+        state.fetchStatus = "error";
+      })
+      .addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.fetchStatus = "success";
+        state.user = action.payload;
+      })
+      .addCase(updateUser.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(updateUser.rejected, (state) => {
+        state.fetchStatus = "error";
+      });
+  },
 });
 
 export const { setUser } = userSlice.actions;

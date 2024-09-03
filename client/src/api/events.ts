@@ -1,36 +1,98 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "@/api/base";
+import { api } from "./base";
 import axios from "axios";
-import { Event, EventCreate } from "@/store/interfaces";
-import { useSelector } from "react-redux";
-import { selectAuthUser } from "@/store/store";
+import { Event, EventCreate } from "@/constants/interfaces";
 
-export const getAllEvents = createAsyncThunk("getAllEvents", async () => {
-  try {
-    const response = await api.get(`/events`, {});
+export const getAllEvents = createAsyncThunk(
+  "events/getAllEvents",
+  async (_, { rejectWithValue }) => {
+    try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+      const { token, refreshToken } = JSON.parse(authUser);
 
-    // Convert Axios headers to a plain object
-    const headers = { ...response.headers };
-    return { ...response.data, headers };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return error.response?.data;
+      const response = await api.get(`/events`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Refreshtoken: refreshToken,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching events: ", error.response?.data);
+        return rejectWithValue(error.response?.data);
+      }
+
+      console.error("Error fetching events: ", error);
+      return rejectWithValue(
+        `An unknown error has occurred. Please try again.\n${error}`
+      );
     }
   }
-});
+);
 
-export const creatEvent = createAsyncThunk(
-  "createEvent",
-  async (eventData: EventCreate, { rejectWithValue }) => {
+export const getHostedEvents = createAsyncThunk(
+  "events/getHostedEvents",
+  async (_, { rejectWithValue }) => {
     try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+      const { token, refreshToken } = JSON.parse(authUser);
+
+      const response = await api.get(`/events/hosted`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Refreshtoken: refreshToken,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching events: ", error.response?.data);
+        return rejectWithValue(error.response?.data);
+      }
+
+      console.error("Error fetching events: ", error);
+      return rejectWithValue(
+        `An unknown error has occurred. Please try again.\n${error}`
+      );
+    }
+  }
+);
+
+export const createEvent = createAsyncThunk(
+  "events/createEvent",
+  async (
+    {
+      eventData,
+      token,
+      refreshToken,
+    }: { eventData: EventCreate; token: string; refreshToken: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      console.log(eventData);
+
       const response = await api.post(
         "/events",
         {
           ...eventData,
+          status: "before",
         },
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
           },
         }
       );
@@ -44,6 +106,7 @@ export const creatEvent = createAsyncThunk(
         return rejectWithValue(error.response?.data);
       }
 
+      console.error("Error creating event: ", error);
       return rejectWithValue(
         `An unknown error has orccured. Please try again.\n${error}`
       );
@@ -52,18 +115,24 @@ export const creatEvent = createAsyncThunk(
 );
 
 export const updateEvent = createAsyncThunk(
-  "updateEvent",
+  "events/updateEvent",
   async (updateData: Event, { rejectWithValue }) => {
     try {
-      const { token } = useSelector(selectAuthUser);
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken } = JSON.parse(authUser);
 
       const response = await api.put(
         `/events/${updateData.event_id}`,
-        { updateData },
+        { ...updateData },
         {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
           },
         }
       );
@@ -74,6 +143,121 @@ export const updateEvent = createAsyncThunk(
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error updating event: ", error.message);
+        return rejectWithValue(error.response?.data);
+      }
+
+      return rejectWithValue(
+        `An unknown error has orccured. Please try again.\n${error}`
+      );
+    }
+  }
+);
+
+export const RSVPUserInEvent = createAsyncThunk(
+  "events/RSVPUserInEvent",
+  async (updateData: Event, { rejectWithValue }) => {
+    try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken } = JSON.parse(authUser);
+
+      const response = await api.put(
+        `/events/${updateData.event_id}/rsvp`,
+        {
+          ...updateData,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
+          },
+        }
+      );
+
+      // Convert Axios headers to a plain object
+      const headers = { ...response.headers };
+      return { ...response.data, headers };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error RSVPing user in event: ", error.message);
+        return rejectWithValue(error.response?.data);
+      }
+
+      return rejectWithValue(
+        `An unknown error has orccured. Please try again.\n${error}`
+      );
+    }
+  }
+);
+
+export const endEvent = createAsyncThunk(
+  "events/endEvent",
+  async (event_id: number, { rejectWithValue }) => {
+    try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken } = JSON.parse(authUser);
+
+      const response = await api.put(
+        `/events/${event_id}/end`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            RefreshToken: refreshToken,
+          },
+        }
+      );
+
+      // Convert Axios headers to a plain object
+      const headers = { ...response.headers };
+      return { ...response.data, headers };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error ending event: ", error.message);
+        return rejectWithValue(error.response?.data);
+      }
+
+      return rejectWithValue(
+        `An unknown error has orccured. Please try again.\n${error}`
+      );
+    }
+  }
+);
+
+export const deleteEvent = createAsyncThunk(
+  "events/deleteEvent",
+  async (event_id: number, { rejectWithValue }) => {
+    try {
+      const authUser = localStorage.getItem("authUser") || null;
+      if (!authUser) {
+        return rejectWithValue("No user is logged in.");
+      }
+
+      const { token, refreshToken } = JSON.parse(authUser);
+
+      const response = await api.delete(`/events/${event_id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          RefreshToken: refreshToken,
+        },
+      });
+
+      // Convert Axios headers to a plain object
+      const headers = { ...response.headers };
+      return { ...response.data, headers };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error deleting event: ", error.message);
         return rejectWithValue(error.response?.data);
       }
 
