@@ -3,8 +3,19 @@
     {
       "src": "client/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "client/dist" }
+      "config": {
+        "distDir": "client/dist"
+      }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "client/$1" }]
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/client/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/client/index.html"
+    }
+  ]
 }
