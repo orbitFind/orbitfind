@@ -1,0 +1,5 @@
+/.venv
+/.ssh
+
+# Ignore .env file containing credentials, secrets, and other sensitive information
+.env
