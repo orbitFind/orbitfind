@@ -50,7 +50,6 @@ const ProtectedRoute: React.FC = () => {
     return (
         <div>
             <Outlet />
-            <SignOut />
         </div>
     );
 };

@@ -74,50 +74,23 @@ const EventsManage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col md:flex-row">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col">
+      {/* Header */}
       <motion.div
-        className="w-full md:w-1/4 bg-gray-800 p-6 border-r border-gray-700 shadow-lg"
-        initial={{ x: -100 }}
-        animate={{ x: 0 }}
-        exit={{ x: -100 }}
+        className="bg-gray-800 p-4 border-b border-gray-700 shadow-md flex justify-between items-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <img
-          className="h-20 mb-6 mx-auto"
-          src="/Orbitfind.png"
-          alt="Logo"
-        />
-        <nav className="space-y-4">
-          <button className="flex items-center space-x-2 p-2 rounded-lg">
-            <FaHome className="text-xl text-gray-400" />
-            <span className="text-lg">Home</span>
-          </button>
-          <button className="flex items-center space-x-2 p-2 rounded-lg">
-            <FaCalendarAlt className="text-xl text-gray-400" />
-            <span className="text-lg">Manage Events</span>
-          </button>
-          <button className="flex items-center space-x-2 p-2 rounded-lg">
-            <FaCog className="text-xl text-gray-400" />
-            <span className="text-lg">Settings</span>
-          </button>
-        </nav>
+        <h1 className="text-2xl font-semibold">
+          Event Management Dashboard
+        </h1>
       </motion.div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <motion.div
-          className="bg-gray-800 p-4 border-b border-gray-700 shadow-md flex justify-between items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-2xl font-semibold">
-            Event Management Dashboard
-          </h1>
-        </motion.div>
-
+      <div className="flex-1 flex flex-col p-6">
         {/* Events List */}
-        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => (
             <motion.div
               key={event.id}
@@ -125,9 +98,7 @@ const EventsManage: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {event.title}
-                </h3>
+                <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
                 <div className="flex items-center text-gray-400 mb-4">
                   <FaCalendarAlt className="mr-2" />
                   <span>{event.date}</span>
@@ -136,21 +107,25 @@ const EventsManage: React.FC = () => {
                   <FaUsers className="mr-2" />
                   <span>{event.people} People RSVP'd</span>
                 </div>
+                <div className="flex items-center text-gray-400 mb-4">
+                  <FaMapMarkerAlt className="mr-2" />
+                  <span>{event.location}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center mt-auto">
+              <div className="flex justify-between items-center mt-auto space-x-2">
                 <button
                   onClick={() => handleMoreInfo(event)}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                  className="flex-1 flex items-center justify-center bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition duration-200"
                 >
-                  <FaEdit />
-                  <span>Manage Event</span>
+                  <FaEdit className="text-sm mr-1" />
+                  <span className="text-sm">Manage</span>
                 </button>
                 <button
                   onClick={() => handleDeleteEvent(event.id)}
-                  className="bg-red-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                  className="flex-1 flex items-center justify-center bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 transition duration-200"
                 >
-                  <FaTrash />
-                  <span>Delete</span>
+                  <FaTrash className="text-sm mr-1" />
+                  <span className="text-sm">Delete</span>
                 </button>
               </div>
             </motion.div>
@@ -171,7 +146,8 @@ const EventsManage: React.FC = () => {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-gray-800 w-full max-w-lg p-8 rounded-lg shadow-xl relative overflow-y-auto"
+              className="bg-gray-800 w-full max-w-lg md:max-w-xl lg:max-w-2xl p-6 md:p-8 rounded-lg shadow-xl relative overflow-y-auto modal-scrollbar"
+              style={{ maxHeight: '80vh' }}
             >
               <button
                 onClick={handleClose}
@@ -244,7 +220,7 @@ const EventsManage: React.FC = () => {
                     <span>{editableEvent?.people} People RSVP'd</span>
                   </button>
                   {showAttendees && (
-                    <div className="mt-4 max-h-40 overflow-y-auto">
+                    <div className="mt-4 max-h-32 overflow-y-auto modal-scrollbar">
                       {Array.from({ length: editableEvent?.people || 0 }).map((_, index) => (
                         <div key={index} className="flex items-center mb-2">
                           <img

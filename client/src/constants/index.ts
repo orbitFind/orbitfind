@@ -1,16 +1,16 @@
 export const navLinks = [
   {
-    id: "",
-    title: "Join Waitlist",
+    id: "/events",
+    title: "Go to App",
   },
-  {
-    id: "about",
-    title: "About Us",
-  },
-  {
-    id: "features",
-    title: "Features",
-  },
+  // {
+  //   id: "about",
+  //   title: "About Us",
+  // },
+  // {
+  //   id: "features",
+  //   title: "Features",
+  // },
 ];
 
 const teamMembers = [
