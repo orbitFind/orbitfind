@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EventState } from "@/constants/interfaces";
+import { Event, EventState } from "@/constants/interfaces";
 import {
   getAllEvents,
   createEvent,
@@ -17,6 +17,12 @@ const eventsSlice = createSlice({
     setEvents: (state, action: PayloadAction<EventState>) => {
       state.events = action.payload.events;
       state.fetchStatus = action.payload.fetchStatus;
+    },
+    setSpecificEvent: (state, action: PayloadAction<Event>) => {
+      const index = state.events.findIndex(
+        (event) => event.event_id === action.payload.event_id
+      );
+      state.events[index] = action.payload;
     },
   },
   extraReducers: (builder) => {

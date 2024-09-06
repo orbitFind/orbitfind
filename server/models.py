@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum
 
-db = SQLAlchemy()
+db : SQLAlchemy = SQLAlchemy()
 
 # Association tables for many-to-many relationships
 user_badges = db.Table('user_badges',

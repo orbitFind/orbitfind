@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import "cropperjs/dist/cropper.css";
 import { motion } from "framer-motion";
 import { selectUser, useAppDispatch } from "@/store/store";
@@ -9,7 +9,7 @@ import SignedUpToEvents from "@/components/profile/SignedUpToEvents";
 import HostedEvents from "@/components/profile/HostedEvents";
 import { useNavigate } from "react-router-dom";
 import CompletedEvents from "@/components/profile/CompletedEvents";
-import BadgesList from "@/components/profile/BadgesList";
+// import BadgesList from "@/components/profile/BadgesList"; // ! Badges feature not implemented yet
 
 const UserProfileView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -21,10 +21,6 @@ const UserProfileView: React.FC = () => {
     await dispatch(getUser())
   }
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#070F2B] flex flex-col md:flex-row">
       {/* Sidebar/Profile Section */}
@@ -35,7 +31,7 @@ const UserProfileView: React.FC = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <DetailsForm user={user!} fetchUser={fetchUser} />
-        <BadgesList user={user!} />
+        {/* <BadgesList user={user!} /> */}
       </motion.div >
 
       {/* Main Content Section */}
@@ -58,7 +54,7 @@ const UserProfileView: React.FC = () => {
           <button className="bg-[#1B5A55] text-[#E5E7EB] px-4 py-2 rounded-lg ml-5" onClick={() => navigate("/admin")}>Manage Events</button>
         </div>
 
-        {user?.hostedEvents && user?.hostedEvents.length > 0 ? (
+        {user?.hostedEvents && user?.hostedEvents.filter(event => event.status !== "completed").length > 0 ? (
           <HostedEvents user={user} />) : (
           <div>
             <p>You're not hosting any events yet! Go to the events page to host some events.</p>
@@ -66,12 +62,7 @@ const UserProfileView: React.FC = () => {
         )}
         <hr className="my-8 border-[#535C91]" />
         <h1 className="text-3xl text-[#E5E7EB] mb-4">Events You've Completed</h1>
-        {user?.completedEvents && user?.completedEvents.length > 0 ? (
-          <CompletedEvents user={user} />) : (
-          <div>
-            <p>You haven't completed any events yet! Go to the events page to complete some events.</p>
-          </div>
-        )}
+        <CompletedEvents user={user!} />
       </motion.div >
 
     </div >

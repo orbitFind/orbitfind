@@ -21,9 +21,12 @@ import ConfirmModal from "@/components/ui/confirmModal";
 import { Input } from "@/components/ui/input";
 import SignInUsers from "@/components/admin/SignInUsers";
 import EndEvent from "@/components/admin/EndEvent";
-import CompletedHostEvents from "@/components/admin/CompletedHostEvents";
-import { getUser } from "@/api/user";
+
+// import { getUser } from "@/api/user";
 import { useToast } from "@/components/ui/use-toast";
+
+import CurrentHostEvents from "@/components/admin/CurrentHostEvents";
+import CompletedHostEvents from "@/components/admin/CompletedHostEvents";
 
 const EventsManage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -38,26 +41,29 @@ const EventsManage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { events } = useSelector(selectEvents);
+  const { events, fetchStatus } = useSelector(selectEvents);
   const { user } = useSelector(selectUser)
 
   const fetchEvents = async () => {
     await dispatch(getHostedEvents()).unwrap().catch((error) => {
-      console.error("Error fetching hosted events:", error);
-      navigate("/auth");
+      console.error("Error fetching events:", error);
+      toast({ title: "Error", description: "Something went wrong while fetching your events, please try again.", variant: "destructive" });
     });
   }
 
-  const fetchUser = async () => {
-    await dispatch(getUser()).unwrap().catch((error) => {
-      console.error("Error fetching user:", error);
-      navigate("/auth");
-    });
-  }
+  // const fetchUser = async () => {
+  //   await dispatch(getUser()).unwrap().catch((error) => {
+  //     console.error("Error fetching user:", error);
+  //     navigate("/auth");
+  //   });
+  // }
 
   useEffect(() => {
     fetchEvents();
-    fetchUser();
+    // fetchUser();
+    events.forEach((event) => {
+      console.log(event.status)
+    });
   }, [])
 
   const handleMoreInfo = (event: Event) => {
@@ -65,7 +71,6 @@ const EventsManage: React.FC = () => {
     setEditableEvent({ ...event });
     setStartDate(new Date(event.date_start));
     setEndDate(new Date(event.date_end));
-    console.log(event.signed_up_users)
   };
 
   const handleClose = () => {
@@ -80,15 +85,16 @@ const EventsManage: React.FC = () => {
   const handleSaveChanges = async (e: FormEvent) => {
     e.preventDefault();
     if (editableEvent) {
+
       if (new Date(editableEvent.date_start) > new Date(editableEvent.date_end)) {
         toast({ title: "Error", description: "Start date cannot be after end date.", variant: "destructive" });
         return;
       }
 
-      if (new Date(editableEvent.date_start) < new Date() || new Date(editableEvent.date_end) < new Date()) {
-        toast({ title: "Error", description: "Event dates cannot be in the past.", variant: "destructive" });
-        return;
-      }
+      // if new Date(editableEvent.date_start) < new Date() || new Date(editableEvent.date_end) < new Date()) {
+      //   toast({ title: "Error", description: "Event dates cannot be in the past.", variant: "destructive" });
+      //   return;
+      // }
 
       try {
         await dispatch(updateEvent(editableEvent)).unwrap();
@@ -214,226 +220,233 @@ const EventsManage: React.FC = () => {
           </h1>
         </motion.div>
 
-        <h2 className="text-2xl font-semibold mx-6 mt-6">
-          Upcoming Events
-        </h2>
+        {fetchStatus === "loading" && (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+          </div>
+        )}
 
+        {fetchStatus === "success" && events.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-semibold mx-6 mt-6">
+              Upcoming Events
+            </h2>
 
-        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-          {events.filter(event => event.status !== "completed").length > 0 ? events?.filter(event => event.status !== "completed").map((event) => (
-            <motion.div
-              key={event.event_id}
-              className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col h-full border border-gray-700"
-              transition={{ duration: 0.3 }}
-            >
-              <div>
-                {event.status === "before" && (
-                  <div className="bg-[#FFA500] text-white px-2 py-1 rounded-lg mb-4 font-bold">
-                    Starts in {Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 1 ? `${Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60))} hours` : `${Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days`}
-                  </div>
-                )}
-                {event.status === "ongoing" && (
-                  <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
-                    • LIVE
-                  </div>
-                )}
-                <h3 className="text-xl font-semibold mb-2">
-                  {event.name}
-                </h3>
-                <div className="flex items-center text-gray-400 mb-4">
-                  <FaCalendarAlt className="mr-2" />
-                  <span>{new Date(event.date_start).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center text-gray-400 mb-4">
-                  <FaCalendarAlt className="mr-2" />
-                  <span>{new Date(event.date_end).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center text-gray-400 mb-4">
-                  <FaUsers className="mr-2" />
-                  <span>{event.signed_up_users.length} People RSVP'd</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center mt-auto">
-                <button
-                  onClick={() => handleMoreInfo(event)}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+              {events.filter(event => event.status === "before").length > 0 ? events?.filter(event => event.status === "before").map((event) => (
+                <motion.div
+                  key={event.event_id}
+                  className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col h-full border border-gray-700"
+                  transition={{ duration: 0.3 }}
                 >
-                  <FaEdit />
-                  <span>Manage</span>
-                </button>
-                {event.status === "before" && (
-                  <button
-                    onClick={() => handleDeleteModal(event)}
-                    className="bg-red-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
-                  >
-                    <FaTrash />
-                    <span>Delete</span>
-                  </button>
-                )}
-              </div>
+                  <div>
+                    {event.status === "before" && (
+                      <div className="bg-[#FFA500] text-white px-2 py-1 rounded-lg mb-4 font-bold">
+                        Starts in {Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 1 ? `${Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60))} hours` : `${Math.floor((new Date(event.date_start).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days`}
+                      </div>
+                    )}
+                    <h3 className="text-xl font-semibold mb-2">
+                      {event.name}
+                    </h3>
+                    <div className="flex items-center text-gray-400 mb-4">
+                      <FaCalendarAlt className="mr-2" />
+                      <span>{new Date(event.date_start).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center text-gray-400 mb-4">
+                      <FaCalendarAlt className="mr-2" />
+                      <span>{new Date(event.date_end).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center text-gray-400 mb-4">
+                      <FaUsers className="mr-2" />
+                      <span>{event.signed_up_users.length} People RSVP'd</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <button
+                      onClick={() => handleMoreInfo(event)}
+                      className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                    >
+                      <FaEdit />
+                      <span>Manage</span>
+                    </button>
+                    {event.status === "before" && (
+                      <button
+                        onClick={() => handleDeleteModal(event)}
+                        className="bg-red-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                      >
+                        <FaTrash />
+                        <span>Delete</span>
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )) : (
+                <div className="text-gray-400 w-full">
+                  <p>No upcoming events.</p>
+                </div>
+              )}
             </motion.div>
-          )) : (
-            <div className="text-gray-400 w-full">
-              <p>No upcoming events.</p>
-            </div>
-          )}
-        </motion.div>
-        <h2 className="text-2xl font-semibold m-6">
-          Completed Events
-        </h2>
-        <CompletedHostEvents user={user!} />
-      </div>
+            <h2 className="text-2xl font-semibold m-6">
+              Current Hosted Events
+            </h2>
+            <CurrentHostEvents user={user!} handleMoreInfo={handleMoreInfo} />
+            <h2 className="text-2xl font-semibold m-6">
+              Completed Events
+            </h2>
+            <CompletedHostEvents user={user!} />
+          </div>
+        )}
 
 
 
-      {/* Modal for Event Management */}
-      <AnimatePresence>
-        {selectedEvent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-scroll"
-          >
+        {/* Modal for Event Management */}
+        <AnimatePresence>
+          {selectedEvent && (
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-gray-800 w-full max-w-lg p-8 rounded-lg shadow-xl relative overflow-y-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-scroll"
             >
-              {/* <button
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="bg-gray-800 w-full max-w-lg p-8 rounded-lg shadow-xl relative overflow-y-auto"
+              >
+                {/* <button
                 onClick={handleClose}
                 className="absolute top-4 right-4 text-gray-400 text-lg"
               >
                 <FaTimes />
               </button> */}
 
-              {/* Event Management Form */}
-              <form onSubmit={handleSaveChanges}>
-                <h2 className="text-2xl font-semibold my-6">
-                  Manage {editableEvent?.name}
-                </h2>
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <label className={`block text-gray-400 mb-1`}>Title</label>
-                    {editableEvent?.status === "ongoing" ? (
-                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                        {editableEvent?.name}
-                      </div>
-                    ) : (
-                      <Input
-                        type="text"
-                        value={editableEvent?.name || ''}
-                        onChange={(e) => setEditableEvent({ ...editableEvent!, name: e.target.value })}
-                        className={`bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600`}
-                      />
-                    )
-                    }
+                {/* Event Management Form */}
+                <form onSubmit={handleSaveChanges}>
+                  <h2 className="text-2xl font-semibold my-6">
+                    Manage {editableEvent?.name}
+                  </h2>
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className={`block text-gray-400 mb-1`}>Title</label>
+                      {editableEvent?.status === "ongoing" ? (
+                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                          {editableEvent?.name}
+                        </div>
+                      ) : (
+                        <Input
+                          type="text"
+                          value={editableEvent?.name || ''}
+                          onChange={(e) => setEditableEvent({ ...editableEvent!, name: e.target.value })}
+                          className={`bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600`}
+                        />
+                      )
+                      }
 
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Start Date</label>
-                    {editableEvent?.status === "ongoing" ? (
-                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                        {startDate?.toLocaleString()}
-                      </div>
-                    ) : (
-                      <Input
-                        type="date"
-                        value={startDate?.toISOString().split('T')[0]}
-                        onChange={handleStartDateChange}
-                        className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">End Date</label>
-                    {editableEvent?.status === "ongoing" ? (
-                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                        {endDate?.toLocaleString()}
-                      </div>
-                    ) : (
-                      <Input
-                        type="date"
-                        value={endDate?.toISOString().split('T')[0]}
-                        onChange={handleEndDateChange}
-                        className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Location</label>
-                    {editableEvent?.status === "ongoing" ? (
-                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                        {editableEvent?.location}
-                      </div>
-                    ) : (
-                      <Input
-                        type="text"
-                        value={editableEvent?.location || ''}
-                        onChange={(e) => setEditableEvent({ ...editableEvent!, location: e.target.value })}
-                        className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Region</label>
-                    {editableEvent?.status === "ongoing" ? (
-                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                        {editableEvent?.region}
-                      </div>
-                    ) : (
-                      <Input
-                        type="text"
-                        value={editableEvent?.region || ''}
-                        onChange={(e) => setEditableEvent({ ...editableEvent!, region: e.target.value })}
-                        className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Description</label>
-                    <textarea
-                      value={editableEvent?.description || ''}
-                      onChange={(e) => setEditableEvent({ ...editableEvent!, description: e.target.value })}
-                      className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                      rows={4}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Tags</label>
-                    <div className="flex flex-wrap space-x-2">
-                      {editableEvent?.tags.map((tag: string, index: number) => (
-                        <span
-                          key={index}
-                          className="bg-gray-600 text-gray-200 px-3 py-1 rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
                     </div>
-                  </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Start Date</label>
+                      {editableEvent?.status === "ongoing" ? (
+                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                          {startDate?.toLocaleString()}
+                        </div>
+                      ) : (
+                        <Input
+                          type="date"
+                          value={startDate?.toISOString().split('T')[0]}
+                          onChange={handleStartDateChange}
+                          className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">End Date</label>
+                      {editableEvent?.status === "ongoing" ? (
+                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                          {endDate?.toLocaleString()}
+                        </div>
+                      ) : (
+                        <Input
+                          type="date"
+                          value={endDate?.toISOString().split('T')[0]}
+                          onChange={handleEndDateChange}
+                          className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Location</label>
+                      {editableEvent?.status === "ongoing" ? (
+                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                          {editableEvent?.location}
+                        </div>
+                      ) : (
+                        <Input
+                          type="text"
+                          value={editableEvent?.location || ''}
+                          onChange={(e) => setEditableEvent({ ...editableEvent!, location: e.target.value })}
+                          className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Region</label>
+                      {editableEvent?.status === "ongoing" ? (
+                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                          {editableEvent?.region}
+                        </div>
+                      ) : (
+                        <Input
+                          type="text"
+                          value={editableEvent?.region || ''}
+                          onChange={(e) => setEditableEvent({ ...editableEvent!, region: e.target.value })}
+                          className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Description</label>
+                      <textarea
+                        value={editableEvent?.description || ''}
+                        onChange={(e) => setEditableEvent({ ...editableEvent!, description: e.target.value })}
+                        className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
+                        rows={4}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Tags</label>
+                      <div className="flex flex-wrap space-x-2">
+                        {editableEvent?.tags.map((tag: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-gray-600 text-gray-200 px-3 py-1 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-                  {/* Sign In Users */}
-                  {selectedEvent.status === "before" ? (
-                    <div className="flex flex-col w-full">
-                      <h3 className="text-lg font-semibold mb-2">Sign In Users</h3>
-                      <p className="text-gray-400">Portal will open when the event is live.</p>
-                    </div>
-                  ) :
-                    selectedEvent.status === "ongoing" &&
-                      selectedEvent.signed_up_users?.length > 0 ? (
-                      <div className="flex flex-col items-center w-full">
-                        <SignInUsers event={selectedEvent} />
-                      </div>
-                    ) : (
+                    {/* Sign In Users */}
+                    {selectedEvent.status === "before" ? (
                       <div className="flex flex-col w-full">
-                        <h3 className="text-lg font-semibold mb-2">No users signed up</h3>
-                        <p className="text-gray-400">No users have signed up for this event yet.</p>
+                        <h3 className="text-lg font-semibold mb-2">Sign In Users</h3>
+                        <p className="text-gray-400">Portal will open when the event is live.</p>
                       </div>
-                    )}
+                    ) :
+                      selectedEvent.status === "ongoing" &&
+                        selectedEvent.signed_up_users?.length > 0 ? (
+                        <div className="flex flex-col items-center w-full">
+                          <SignInUsers event={selectedEvent} />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col w-full">
+                          <h3 className="text-lg font-semibold mb-2">No users signed up</h3>
+                          <p className="text-gray-400">No users have signed up for this event yet.</p>
+                        </div>
+                      )}
 
-                  {/* Attendees
+                    {/* Attendees
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Attendees</h3>
                     <button
@@ -458,40 +471,41 @@ const EventsManage: React.FC = () => {
                       </div>
                     )}
                   </div> */}
-                </div>
+                  </div>
 
-                <div className="flex space-x-4">
-                  <button
-                    type="submit"
-                    className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
-                  >
-                    <FaSave />
-                    <span>Save</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="bg-red-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
-                  >
-                    <FaTimes />
-                    <span>Cancel</span>
-                  </button>
-                  <EndEvent event={selectedEvent} setSelectedEvent={setSelectedEvent} />
-                </div>
-              </form>
+                  <div className="flex space-x-4">
+                    <button
+                      type="submit"
+                      className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                    >
+                      <FaSave />
+                      <span>Save</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      className="bg-red-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+                    >
+                      <FaTimes />
+                      <span>Cancel</span>
+                    </button>
+                    <EndEvent event={selectedEvent} setSelectedEvent={setSelectedEvent} />
+                  </div>
+                </form>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <ConfirmModal
-        key="delete-event-modal"
-        isOpen={deleteModalOpen}
-        title="Delete Event"
-        description="Are you sure you want to delete this event?"
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={() => handleDeleteEvent(selectedDeleteEvent?.event_id || -1)}
-        onCancel={() => setDeleteModalOpen(false)} />
+          )}
+        </AnimatePresence>
+        <ConfirmModal
+          key="delete-event-modal"
+          isOpen={deleteModalOpen}
+          title="Delete Event"
+          description="Are you sure you want to delete this event?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={() => handleDeleteEvent(selectedDeleteEvent?.event_id || -1)}
+          onCancel={() => setDeleteModalOpen(false)} />
+      </div>
     </div>
   );
 };

@@ -29,7 +29,7 @@ const Navbar: React.FC = () => {
               <li
                 className="text-[#E5E7EB] font-medium cursor-pointer"
               >
-                <a href={`#${link.id}`}>{link.title}</a>
+                <a href={`${link.id}`}>{link.title}</a>
               </li>
             </div>
           ))}
@@ -55,7 +55,7 @@ const Navbar: React.FC = () => {
                     setToggle(!toggle);
                   }}
                 >
-                  <a href={`#${link.id}`}>{link.title}</a>
+                  <a href={`${link.id}`}>{link.title}</a>
                 </li>
               ))}
             </ul>

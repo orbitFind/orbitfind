@@ -15,6 +15,7 @@ import EventsManage from './pages/EventsManage';
 import store from '@/store/store';
 import ProtectedRoute from './components/ProtectedRoute';
 import CreateEventsPage from './pages/CreateEventsPage';
+import Layout from './components/Layout';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -29,15 +30,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />} >
-              <Route path="/events" element={<EventsPage />} />
-              <Route path="/events/create" element={<CreateEventsPage />} />
-              <Route path="/profile" element={<UserProfile />} />
-              <Route path="/admin" element={<EventsManage />} />
-
+              <Route element={<Layout />}>
+                <Route path="/events" element={<EventsPage />} />
+                <Route path="/events/create" element={<CreateEventsPage />} />
+                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/admin" element={<EventsManage />} />
+              </Route>
             </Route>
           </Route>
         </Routes>
       </BrowserRouter>
     </Provider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);
