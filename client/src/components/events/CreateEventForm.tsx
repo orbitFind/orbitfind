@@ -7,6 +7,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/use-toast";
+import { formatDate } from "@/util/input";
 
 const CreateEventForm = () => {
     const [eventName, setEventName] = useState('');
@@ -49,6 +50,7 @@ const CreateEventForm = () => {
 
     const handleEventStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const date = new Date(e.target.value);
+        console.log(date.toLocaleString());
         setEventStartDate(date);
     };
 
@@ -232,7 +234,7 @@ const CreateEventForm = () => {
                 <Input
                     type="datetime-local"
                     id="eventStartDate"
-                    value={eventStartDate.toISOString().slice(0, 16)}
+                    value={formatDate(eventStartDate)}
                     onChange={handleEventStartDateChange}
                     className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
                     required
@@ -245,7 +247,7 @@ const CreateEventForm = () => {
                 <Input
                     type="datetime-local"
                     id="eventEndDate"
-                    value={eventEndDate.toISOString().slice(0, 16)}
+                    value={formatDate(eventEndDate)}
                     onChange={handleEventEndDateChange}
                     className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
                     required

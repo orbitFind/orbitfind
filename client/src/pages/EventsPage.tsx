@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
   FaSearch,
-  FaCalendarAlt,
-  FaHome,
-  // FaUsers,
   FaTimes,
   FaMapMarkerAlt,
   FaCalendar,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { categories, regions } from "@/constants"; // Assuming events are defined in constants
-import { useNavigate } from "react-router-dom";
 import { selectEvents, useAppDispatch } from "@/store/store";
 import { getAllEvents, RSVPUserInEvent } from "@/api/events";
 import { useSelector } from "react-redux";
@@ -58,7 +54,6 @@ const EventsPage = () => {
     await dispatch(getAllEvents());
   }
   useEffect(() => {
-
     fetchEvents();
   }, []);
 
@@ -73,8 +68,6 @@ const EventsPage = () => {
     closeRSVPModal();
     fetchEvents();
   }
-
-  const navigate = useNavigate();
 
   const handleMoreInfo = (event: any) => {
     setSelectedEvent(event);
@@ -181,75 +174,54 @@ const EventsPage = () => {
           src="/Orbitfind.png"
           alt="Logo"
         />
-        <nav className="space-y-4">
-          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded">
-            <FaHome className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-black">Home</span>
-          </button>
-          <button className="flex items-center space-x-2 p-2 bg-gray-200 hover:bg-white rounded" onClick={() => navigate("/events/create")}>
-            <FaCalendarAlt className="text-xl text-[#9290C3]" />
-            <span className="text-lg text-black">Create Event</span>
-          </button>
-        </nav>
-      </motion.div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <motion.div
-          className="bg-[#1B1A55] p-4 border-b border-[#535C91] flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center space-x-4">
-            <FaSearch className="text-2xl text-[#9290C3]" />
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <FaSearch className="text-2xl text-[#9290C3] mr-2" />
             <input
               type="text"
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8]"
+              className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8] w-full"
             />
           </div>
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-            <select
-              value={selectedRegion}
-              onChange={handleRegionChange}
-              className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out"
-            >
-              <option value="">Select Region</option>
-              {regions.map((region) => (
-                <option key={region.value} value={region.value}>
-                  {region.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out"
-            >
-              <option value="">Select Category</option>
-              {categories.map((category) => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
-            <div className="flex items-center">
-              <input
-                type="text"
-                placeholder="Add Tags"
-                value={inputTag}
-                onChange={(e) => setInputTag(e.target.value)}
-                onKeyDown={handleTagInput}
-                className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8]"
-              />
-            </div>
-          </div>
-        </motion.div>
+          <select
+            value={selectedRegion}
+            onChange={handleRegionChange}
+            className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out w-full mb-4"
+          >
+            <option value="">Select Region</option>
+            {regions.map((region) => (
+              <option key={region.value} value={region.value}>
+                {region.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out w-full mb-4"
+          >
+            <option value="">Select Category</option>
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Add Tags"
+            value={inputTag}
+            onChange={(e) => setInputTag(e.target.value)}
+            onKeyDown={handleTagInput}
+            className="bg-[#070F2B] p-2 rounded-lg focus:outline-none focus:ring focus:ring-[#535C91] text-[#E5E7EB] placeholder-[#A8A8A8] w-full"
+          />
+        </div>
+      </motion.div>
 
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
         {/* Selected Filters Section */}
         <div className="flex flex-wrap justify-center mt-4 mb-4 space-x-2">
           {selectedRegion && (

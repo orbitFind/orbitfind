@@ -12,7 +12,7 @@ const BadgesList: React.FC<BadgesListProps> = ({ user }) => {
         if (user) {
             setBadges(user.badges ?? [])
         }
-    })
+    }, [user]);
 
     if (badges.length === 0)
         return <p>No badges yet</p>

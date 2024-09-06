@@ -18,7 +18,6 @@ from flask_cors import CORS
 from utils import verify_user
 from werkzeug.exceptions import NotFound
 
-
 app = Flask(__name__)
 
 app.config['FIREBASE_WEB_API_KEY'] = os.getenv('FIREBASE_WEB_API_KEY')
@@ -412,10 +411,13 @@ def end_event(id):
         # Verify the user
         user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
 
-        if not user:
+        if user is None:
             return jsonify("Authentication failed"), 401
 
         event = Event.query.get_or_404(id)
+
+        if event is None:
+            raise NotFound(f"Event with ID {id} not found")
 
         if user.user_id not in [host.user_id for host in event.hosted_users]:
             return jsonify('User is not the host of the event'), 403
@@ -430,6 +432,8 @@ def end_event(id):
         # event.hosted_users = handle_user_badges(db, event.hosted_users, type="host")
 
         db.session.commit()
+
+        print("event: ", event.to_dict())
 
         return jsonify({'message': 'Event ended successfully'}), 201
     except NotFound:
@@ -488,11 +492,12 @@ def get_hosted_events():
         # # Update event statuses
         now = datetime.utcnow()  # Use UTC for consistency
         for event in events:
-            if event.date_start.date() == now.date() and event.status != 'ongoing':
-                event.status = 'ongoing'
-            # elif now >= event.date_end and event.status != 'completed':
-            #     event.status = 'completed'
-            db.session.commit()
+            if event.status == "before":
+                if event.date_start.date() == now.date() and event.status != 'ongoing':
+                    event.status = 'ongoing'
+                # elif now >= event.date_end and event.status != 'completed':
+                #     event.status = 'completed'
+        db.session.commit()
 
 
         return jsonify([{
@@ -724,4 +729,4 @@ def sign_up_to_event():
 
 
 if __name__ == '__main__':
-    app.run(port=os.getenv('PORT'))
+    app.run(port=os.getenv('PORT'), debug=True)
