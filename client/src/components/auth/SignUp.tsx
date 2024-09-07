@@ -35,7 +35,7 @@ const SignUp = () => {
             }
 
             const token = await user.getIdToken();
-            const refreshToken = user.refreshToken;
+            const refreshToken = await user.getIdToken(true);
 
             dispatch(setAuthUser({
                 authUser: {
