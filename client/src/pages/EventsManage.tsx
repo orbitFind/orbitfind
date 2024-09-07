@@ -60,10 +60,6 @@ const EventsManage: React.FC = () => {
 
   useEffect(() => {
     fetchEvents();
-    // fetchUser();
-    events.forEach((event) => {
-      console.log(event.status)
-    });
   }, [])
 
   const handleMoreInfo = (event: Event) => {
@@ -98,7 +94,6 @@ const EventsManage: React.FC = () => {
 
       try {
         await dispatch(updateEvent(editableEvent)).unwrap();
-        console.log("Event updated successfully.");
         toast({ title: "Success", description: "Event updated successfully.", variant: "default" });
         handleClose();
         await fetchEvents(); // Refetch events
@@ -129,7 +124,6 @@ const EventsManage: React.FC = () => {
   }
 
   const handleDeleteEvent = (eventId: number) => {
-    console.log("Deleting event:", eventId);
     if (eventId === -1) return;
 
     const authUser = localStorage.getItem("authUser") || null;
@@ -139,9 +133,7 @@ const EventsManage: React.FC = () => {
       return;
     }
 
-    console.log("Deleting event:", eventId);
     dispatch(deleteEvent(eventId)).unwrap().then(() => {
-      console.log("Event deleted successfully.");
       alert("Event deleted successfully.");
       setDeleteModalOpen(false);
 
@@ -165,7 +157,7 @@ const EventsManage: React.FC = () => {
   const navigateCreate = () => {
     navigate("/events/create");
   }
- 
+
   // // DatePicker Wrapper
   // const DatePickerWrapper: React.FC<{
   //   selected: Date | null;
@@ -225,8 +217,8 @@ const EventsManage: React.FC = () => {
         </motion.div>
 
         {fetchStatus === "loading" && (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+          <div className="flex justify-center items-center h-full">
+            <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
           </div>
         )}
 
@@ -318,14 +310,6 @@ const EventsManage: React.FC = () => {
                 exit={{ scale: 0.9 }}
                 className="bg-gray-800 w-full max-w-lg p-8 rounded-lg shadow-xl relative overflow-y-auto"
               >
-                {/* <button
-                onClick={handleClose}
-                className="absolute top-4 right-4 text-gray-400 text-lg"
-              >
-                <FaTimes />
-              </button> */}
-
-                {/* Event Management Form */}
                 <form onSubmit={handleSaveChanges}>
                   <h2 className="text-2xl font-semibold my-6">
                     Manage {editableEvent?.name}
@@ -395,18 +379,9 @@ const EventsManage: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-gray-400 mb-1">Region</label>
-                      {editableEvent?.status === "ongoing" ? (
-                        <div className="bg-red-600 text-white py-2 rounded-lg w-full">
-                          {editableEvent?.region}
-                        </div>
-                      ) : (
-                        <Input
-                          type="text"
-                          value={editableEvent?.region || ''}
-                          onChange={(e) => setEditableEvent({ ...editableEvent!, region: e.target.value })}
-                          className="bg-gray-700 text-gray-200 p-3 rounded-lg w-full border border-gray-600"
-                        />
-                      )}
+                      <div className="bg-red-600 text-white py-2 rounded-lg w-full">
+                        {editableEvent?.region}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-gray-400 mb-1">Description</label>
@@ -441,7 +416,7 @@ const EventsManage: React.FC = () => {
                       selectedEvent.status === "ongoing" &&
                         selectedEvent.signed_up_users?.length > 0 ? (
                         <div className="flex flex-col items-center w-full">
-                          <SignInUsers event={selectedEvent} />
+                          <SignInUsers event={selectedEvent} fetchStatus={fetchStatus} />
                         </div>
                       ) : (
                         <div className="flex flex-col w-full">
@@ -483,7 +458,7 @@ const EventsManage: React.FC = () => {
                       className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
                     >
                       <FaSave />
-                      <span>Save</span>
+                      <span>{fetchStatus === "loading" ? "Saving..." : "Save"}</span>
                     </button>
                     <button
                       type="button"

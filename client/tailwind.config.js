@@ -31,9 +31,6 @@ module.exports = {
       screens: {
         xs: "450px",
       },
-      backgroundImage: {
-        "prod-bg": "url('/src/assets/bg.jpg')",
-      },
       prodImages: {
         battery: "url('/src/assets/prodimgs/Battery.png')",
         colors: "url('/src/assets/prodimgs/colors.png')",

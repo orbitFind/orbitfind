@@ -28,6 +28,7 @@ export interface AuthState {
   authUser: AuthUser | null;
   token: string | null;
   refreshToken: string | null;
+  fetchStatus: "success" | "loading" | "error" | null;
 }
 
 export interface Event {
@@ -53,6 +54,7 @@ export interface Event {
 export interface EventCreate {
   name: string;
   description: string;
+  category: string;
   badges?: Badge[];
   region: string;
   location: string;

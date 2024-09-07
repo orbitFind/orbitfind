@@ -1,30 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { setAuthUser } from '@/store/authSlice';
-import { selectAuthUser, selectUser, useAppDispatch } from '@/store/store';
+import { selectAuthUser, useAppDispatch } from '@/store/store';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getUser } from '@/api/user';
 import { useToast } from './ui/use-toast';
 
 const ProtectedRoute: React.FC = () => {
-    const { authUser } = useSelector(selectAuthUser);
-    const userSlice = useSelector(selectUser);
-    const [loading, setLoading] = useState(true); // Add loading state
+    const { fetchStatus } = useSelector(selectAuthUser);
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     useEffect(() => {
         onAuthStateChanged(auth, async (user) => {
             try {
                 if (user) {
-                    if (!userSlice.user) {
-                        dispatch(getUser());
-                    }
-
                     const token = await user.getIdToken();
                     const refreshToken = await user.getIdToken(true);
 
@@ -55,17 +49,11 @@ const ProtectedRoute: React.FC = () => {
                     variant: 'destructive'
                 });
                 navigate('/auth');
-            } finally {
-                setLoading(false);
             }
         });
-    }, []); // Include dispatch in the dependency array
+    }, [location.pathname]); // Include dispatch in the dependency array
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!authUser) {
+    if (fetchStatus === "error") {
         return <Navigate to="/auth" />;
     }
 

@@ -58,6 +58,7 @@ class Event(db.Model):
     region = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(255), nullable=False)
     tags = db.Column(db.JSON, nullable=False)
+    category = db.Column(db.String(255), nullable=False)
     
     # badges = db.relationship('Badge', secondary=event_badges, backref=db.backref('events_badges', lazy='dynamic'))
 

@@ -1,6 +1,6 @@
 import { createEvent } from "@/api/events";
 import { Badge } from "@/constants/interfaces";
-import { useAppDispatch } from "@/store/store";
+import { useAppDispatch, selectEvents } from "@/store/store";
 import { useState } from "react";
 import { FaSave } from "react-icons/fa";
 import { Input } from "../ui/input";
@@ -8,8 +8,9 @@ import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/use-toast";
 import { formatDate } from "@/util/input";
-import { regions } from "@/constants";
+import { categories, regions } from "@/constants";
 import { motion } from 'framer-motion';
+import { useSelector } from "react-redux";
 
 const CreateEventForm = () => {
     const [eventName, setEventName] = useState('');
@@ -20,9 +21,11 @@ const CreateEventForm = () => {
     const [eventTags, setEventTags] = useState<string[]>([]);
     const [eventStartDate, setEventStartDate] = useState(new Date());
     const [eventEndDate, setEventEndDate] = useState(new Date());
+    const [selectedCategory, setSelectedCategory] = useState("");
 
     const navigate = useNavigate();
     const { toast } = useToast();
+    const { fetchStatus } = useSelector(selectEvents);
     const dispatch = useAppDispatch();
 
     const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,10 +36,16 @@ const CreateEventForm = () => {
         setEventDescription(e.target.value);
     };
 
+    const handleCategoryChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedCategory(event.target.value);
+    };
+
     const handleEventRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setEventRegion(e.target.value);
     };
-    
+
     const handleEventLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEventLocation(e.target.value);
     };
@@ -54,7 +63,7 @@ const CreateEventForm = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (eventName === '' || eventDescription === '' || eventRegion === '' || eventLocation === '' || eventTags.length === 0) {
+        if (eventName === '' || eventDescription === '' || eventRegion === '' || eventLocation === '' || eventTags.length === 0 || selectedCategory === '') {
             toast({ title: 'Error', description: 'Please fill in all fields', variant: "destructive" });
             return;
         }
@@ -80,6 +89,7 @@ const CreateEventForm = () => {
             eventData: {
                 name: eventName,
                 description: eventDescription,
+                category: selectedCategory,
                 badges: eventBadges,
                 region: eventRegion,
                 location: eventLocation,
@@ -119,8 +129,8 @@ const CreateEventForm = () => {
     };
 
     return (
-        <motion.form 
-            onSubmit={handleSubmit} 
+        <motion.form
+            onSubmit={handleSubmit}
             className="w-full max-w-lg p-8 rounded-lg shadow-lg bg-[#070F2B] text-[#E5E7EB]"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -152,6 +162,20 @@ const CreateEventForm = () => {
                     className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
+            </div>
+            <div className="mb-5">
+                <select
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    className="bg-[#070F2B] text-[#E5E7EB] p-2 rounded-lg focus:outline-none border border-[#535C91] transition duration-150 ease-in-out w-full mb-4"
+                >
+                    <option value="">Select Category</option>
+                    {categories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                            {category.label}
+                        </option>
+                    ))}
+                </select>
             </div>
             <div className="mb-5">
                 <label htmlFor="eventRegion" className="block text-[#E5E7EB] font-bold mb-2">
@@ -234,7 +258,7 @@ const CreateEventForm = () => {
                 className="flex items-center justify-center bg-[#4F8CFF] text-[#E5E7EB] py-2 px-4 rounded hover:bg-[#535C91]"
             >
                 <FaSave className="mr-2" />
-                Create
+                {fetchStatus === "loading" ? 'Creating...' : 'Create'}
             </Button>
         </motion.form>
     );

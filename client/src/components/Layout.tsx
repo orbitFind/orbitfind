@@ -1,20 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import useSignOut from "@/components/auth/SignOut";
 import { useSelector } from "react-redux";
-import { selectUser } from "@/store/store";
+import { selectUser, useAppDispatch } from "@/store/store";
+import { getUser } from "@/api/user";
 
 const Navbar: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [username, setUsername] = useState("User");
 
   const { user } = useSelector(selectUser);
+
+  const dispatch = useAppDispatch();
+  const location = useLocation();
+
   const signOut = useSignOut();
 
+  const fetchUser = async () => {
+    dispatch(getUser()).then((res) => {
+      setUsername(res.payload.username);
+    });
+  };
+
   useEffect(() => {
-    setUsername(user?.username || "User");
-  }, [user]);
+    fetchUser();
+  }, [location.pathname]);
 
   const handleDropdownToggle = () => {
     setDropdownOpen(!dropdownOpen);

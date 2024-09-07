@@ -72,8 +72,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ user, fetchUser }) => {
 
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>
     setUsername(e.target.value);
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setEmail(e.target.value);
   const handleBioChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
     setBio(e.target.value);
 

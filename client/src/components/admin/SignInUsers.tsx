@@ -7,9 +7,10 @@ import { useToast } from '../ui/use-toast';
 
 interface SignInUsersProps {
     event: Event;
+    fetchStatus: "loading" | "success" | "error" | null;
 }
 
-const SignInUsers: React.FC<SignInUsersProps> = ({ event }) => {
+const SignInUsers: React.FC<SignInUsersProps> = ({ event, fetchStatus }) => {
     const [curEvent, setCurEvent] = useState(event);
     const users = curEvent.signed_up_users;
 
@@ -55,7 +56,7 @@ const SignInUsers: React.FC<SignInUsersProps> = ({ event }) => {
                             onClick={() => handleSignInClick(user)}
                             className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-md"
                         >
-                            Sign In
+                            {fetchStatus === "loading" ? 'Signing In...' : 'Sign In'}
                         </button>
                     )}
 

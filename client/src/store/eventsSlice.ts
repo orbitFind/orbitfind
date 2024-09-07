@@ -5,13 +5,15 @@ import {
   createEvent,
   getHostedEvents,
   deleteEvent,
+  updateEvent,
+  endEvent,
 } from "@/api/events";
 
 const eventsSlice = createSlice({
   name: "events",
   initialState: {
     events: [],
-    fetchStatus: "loading",
+    fetchStatus: null,
   } as EventState,
   reducers: {
     setEvents: (state, action: PayloadAction<EventState>) => {
@@ -27,6 +29,7 @@ const eventsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // getAllEvents reducers
       .addCase(getAllEvents.pending, (state) => {
         state.fetchStatus = "loading";
       })
@@ -37,6 +40,7 @@ const eventsSlice = createSlice({
       .addCase(getAllEvents.rejected, (state) => {
         state.fetchStatus = "error";
       })
+      // createEvent reducers
       .addCase(createEvent.pending, (state) => {
         state.fetchStatus = "loading";
       })
@@ -47,6 +51,7 @@ const eventsSlice = createSlice({
       .addCase(createEvent.rejected, (state) => {
         state.fetchStatus = "error";
       })
+      // getHostedEvents reducers
       .addCase(getHostedEvents.pending, (state) => {
         state.fetchStatus = "loading";
       })
@@ -58,6 +63,7 @@ const eventsSlice = createSlice({
       .addCase(getHostedEvents.rejected, (state) => {
         state.fetchStatus = "error";
       })
+      // deleteEvent reducers
       .addCase(deleteEvent.pending, (state) => {
         state.fetchStatus = "loading";
       })
@@ -68,6 +74,26 @@ const eventsSlice = createSlice({
         setEvents({ events: newEvents, fetchStatus: "success" });
       })
       .addCase(deleteEvent.rejected, (state) => {
+        state.fetchStatus = "error";
+      })
+      // updateEvent reducers
+      .addCase(updateEvent.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(updateEvent.fulfilled, (state) => {
+        state.fetchStatus = "success";
+      })
+      .addCase(updateEvent.rejected, (state) => {
+        state.fetchStatus = "error";
+      })
+      // endEvent reducers
+      .addCase(endEvent.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(endEvent.fulfilled, (state) => {
+        state.fetchStatus = "success";
+      })
+      .addCase(endEvent.rejected, (state) => {
         state.fetchStatus = "error";
       });
   },

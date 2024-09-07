@@ -7,6 +7,7 @@ export const authSlice = createSlice({
     authUser: null,
     token: null,
     refreshToken: null,
+    fetchStatus: null,
   } as AuthState,
   reducers: {
     setAuthUser(
@@ -18,10 +19,16 @@ export const authSlice = createSlice({
       }>
     ) {
       const { authUser, token, refreshToken } = action.payload;
-
+      state.fetchStatus = "loading";
       state.authUser = authUser;
       state.token = token;
       state.refreshToken = refreshToken;
+
+      if (authUser && token && refreshToken) {
+        state.fetchStatus = "success";
+      } else {
+        state.fetchStatus = "error";
+      }
     },
     clearAuthUser(state) {
       state.authUser = null;

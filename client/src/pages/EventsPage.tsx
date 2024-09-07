@@ -46,10 +46,11 @@ const EventsPage = () => {
   const { user } = JSON.parse(authUser);
 
   const dispatch = useAppDispatch();
-  const { events } = useSelector(selectEvents);
+  const { events, fetchStatus } = useSelector(selectEvents);
   const fetchEvents = async () => {
     await dispatch(getAllEvents());
   };
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -228,6 +229,12 @@ const EventsPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
+        {fetchStatus === "loading" && (
+          <div className="flex justify-center items-center h-full">
+            <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+          </div>
+        )}
+
         {/* Selected Filters Section */}
         <div className="flex flex-wrap justify-center mt-4 mb-4 space-x-2">
           {selectedRegion && (
@@ -274,9 +281,9 @@ const EventsPage = () => {
           </div>
         )}
 
-        {/* Events List */}
+
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-          {displayedEvents.filter((event) => event.status !== "completed")
+          {fetchStatus === "success" && displayedEvents.filter((event) => event.status !== "completed")
             .length > 0 ? (
             displayedEvents
               .filter((event) => event.status !== "completed")
@@ -444,7 +451,7 @@ const EventsPage = () => {
         onConfirm={handleRSVP}
         onCancel={closeRSVPModal}
       />
-    </div>
+    </div >
   );
 };
 

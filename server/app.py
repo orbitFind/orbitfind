@@ -284,6 +284,7 @@ def create_event():
         new_event = Event(
             name = data['name'],
             description = data['description'],
+            category = data['category'],
             date_start = date_start_str,
             date_end = date_end_str,
             region=data["region"],
@@ -329,6 +330,8 @@ def update_event(id):
             event.name = data['name']
         if 'description' in data:
             event.description = data['description']
+        if 'category' in data:
+            event.category = data['category']
         if 'status' in data:
             event.status = data['status']
         if 'date_start' in data:
@@ -462,6 +465,7 @@ def get_events():
                 'event_id': event.event_id,
                 'name': event.name,
                 'description': event.description,
+                'category': event.category,
                 'date_start': event.date_start,
                 'date_end': event.date_end,
                 'region': event.region,
@@ -504,6 +508,7 @@ def get_hosted_events():
             'event_id': event.event_id,
             'name': event.name,
             'description': event.description,
+            'category': event.category,
             'date_start': event.date_start,
             'date_end': event.date_end,
             'region': event.region,
