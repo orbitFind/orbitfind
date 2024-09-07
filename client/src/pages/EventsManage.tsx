@@ -6,10 +6,10 @@ import {
   FaHome,
   FaTimes,
   FaUsers,
-  FaCog,
   FaEdit,
   FaSave,
   FaTrash,
+  FaUser,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Event } from "@/constants/interfaces";
@@ -158,10 +158,14 @@ const EventsManage: React.FC = () => {
     navigate("/events");
   }
 
+  const navigateProfile = () => {
+    navigate("/profile");
+  }
+
   const navigateCreate = () => {
     navigate("/events/create");
   }
-
+ 
   // // DatePicker Wrapper
   // const DatePickerWrapper: React.FC<{
   //   selected: Date | null;
@@ -200,9 +204,9 @@ const EventsManage: React.FC = () => {
             <FaCalendarAlt className="text-xl text-gray-400" />
             <span className="text-lg">Create Events</span>
           </button>
-          <button className="flex items-center space-x-2 p-2 rounded-lg">
-            <FaCog className="text-xl text-gray-400" />
-            <span className="text-lg">Settings</span>
+          <button className="flex items-center space-x-2 p-2 rounded-lg" onClick={navigateProfile} >
+            <FaUser className="text-xl text-gray-400" />
+            <span className="text-lg">Profile</span>
           </button>
         </nav>
       </motion.div>

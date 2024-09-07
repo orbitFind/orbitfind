@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  FaSearch,
-  FaTimes,
-  FaMapMarkerAlt,
-  FaCalendar,
-} from "react-icons/fa";
+import { FaSearch, FaTimes, FaMapMarkerAlt, FaCalendar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { categories, regions } from "@/constants"; // Assuming events are defined in constants
 import { selectEvents, useAppDispatch } from "@/store/store";
@@ -26,14 +21,16 @@ const EventsPage = () => {
   const { toast } = useToast();
 
   // RSVP Component
-  const [selectedRSVPEvent, setSelectedRSVPEvent] = useState<Event | null>(null);
+  const [selectedRSVPEvent, setSelectedRSVPEvent] = useState<Event | null>(
+    null
+  );
   const [RSVPModalOpen, setRSVPModalOpen] = useState<boolean>(false);
 
   const openRSVPModal = (event: Event) => {
-    console.log(event.signed_up_users)
+    console.log(event.signed_up_users);
     setSelectedRSVPEvent(event);
     setRSVPModalOpen(true);
-  }
+  };
   const closeRSVPModal = () => {
     setSelectedRSVPEvent(null);
     setRSVPModalOpen(false);
@@ -49,25 +46,31 @@ const EventsPage = () => {
   const { user } = JSON.parse(authUser);
 
   const dispatch = useAppDispatch();
-  const { events } = useSelector(selectEvents)
+  const { events } = useSelector(selectEvents);
   const fetchEvents = async () => {
     await dispatch(getAllEvents());
-  }
+  };
   useEffect(() => {
     fetchEvents();
   }, []);
 
   const handleRSVP = () => {
-    dispatch(RSVPUserInEvent({
-      ...selectedRSVPEvent!,
-      people: (selectedRSVPEvent?.people || 0) + 1,
-      signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user]
-    }));
+    dispatch(
+      RSVPUserInEvent({
+        ...selectedRSVPEvent!,
+        people: (selectedRSVPEvent?.people || 0) + 1,
+        signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user],
+      })
+    );
 
-    toast({ title: "RSVP'd", description: `You have RSVP'd to ${selectedRSVPEvent?.name}`, variant: "default" });
+    toast({
+      title: "RSVP'd",
+      description: `You have RSVP'd to ${selectedRSVPEvent?.name}`,
+      variant: "default",
+    });
     closeRSVPModal();
     fetchEvents();
-  }
+  };
 
   const handleMoreInfo = (event: any) => {
     setSelectedEvent(event);
@@ -134,21 +137,24 @@ const EventsPage = () => {
     );
   };
 
-  const filterEvents = events?.filter((event) =>
-    (selectedRegion === "" || event.region === selectedRegion) &&
-    (selectedCategory === "" || event.category === selectedCategory) &&
-    tags.every((tag) => event.tags.includes(tag)) &&
-    matchesSearchTerm(event)
+  const filterEvents = events?.filter(
+    (event) =>
+      (selectedRegion === "" || event.region === selectedRegion) &&
+      (selectedCategory === "" || event.category === selectedCategory) &&
+      tags.every((tag) => event.tags.includes(tag)) &&
+      matchesSearchTerm(event)
   );
 
-  const getSimilarEvents = events?.filter((event) =>
-    (selectedRegion === "" || event.region === selectedRegion) &&
-    (selectedCategory === "" || event.category === selectedCategory) &&
-    similarTagMatch(event.tags) &&
-    matchesSearchTerm(event)
+  const getSimilarEvents = events?.filter(
+    (event) =>
+      (selectedRegion === "" || event.region === selectedRegion) &&
+      (selectedCategory === "" || event.category === selectedCategory) &&
+      similarTagMatch(event.tags) &&
+      matchesSearchTerm(event)
   );
 
-  const displayedEvents = filterEvents.length > 0 ? filterEvents : getSimilarEvents;
+  const displayedEvents =
+    filterEvents.length > 0 ? filterEvents : getSimilarEvents;
 
   const getRandomPeople = (num: number) => {
     return Array.from({ length: num })
@@ -270,63 +276,73 @@ const EventsPage = () => {
 
         {/* Events List */}
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-          {displayedEvents.filter(event => event.status !== "completed").length > 0 ? (
-            displayedEvents.filter(event => event.status !== "completed").map((event) => (
-              <motion.div
-                key={event.event_id}
-                className="bg-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
-                whileHover={{ scale: 1.02 }} // Scale effect on hover
-              >
-                {event.status === "ongoing" && (
-                  <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
-                    • LIVE
-                  </div>
-                )}
-                <div>
-                  <h3 className="text-xl font-semibold text-[#E5E7EB] mb-2">
-                    {event.name}
-                  </h3>
-                  <div className="flex items-center text-[#9290C3] mb-4">
-                    <FaCalendar className="mr-2" />
-                    <span>{event.date_start}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 mb-4">
-                    {getRandomPeople(3).map((person) => (
-                      <img
-                        key={person.id}
-                        src={person.imageUrl}
-                        alt={`Person ${person.id}`}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    ))}
-                    <span className="text-[#E5E7EB]">{event.people} Going</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center mt-auto">
-                  <button
-                    onClick={() => handleMoreInfo(event)}
-                    className="bg-[#070F2B] text-[#E5E7EB] py-1 px-3 rounded hover:bg-[#535C91] transition duration-200 ease-in-out"
-                  >
-                    More Info
-                  </button>
-                  {!event.hosted_users?.some(u => u === user.uid) && event.signed_up_users?.some(u => u === user.uid) && (
-                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
-                      RSVP'd
-                    </button>
+          {displayedEvents.filter((event) => event.status !== "completed")
+            .length > 0 ? (
+            displayedEvents
+              .filter((event) => event.status !== "completed")
+              .map((event) => (
+                <motion.div
+                  key={event.event_id}
+                  className="bg-[#E5E7EB] text-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: "#1B1A55", // Inverted background
+                    color: "#E5E7EB", // Inverted text color
+                  }}
+                >
+                  {event.status === "ongoing" && (
+                    <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
+                      • LIVE
+                    </div>
                   )}
-                  {!event.hosted_users?.some(u => u === user.uid) && !event.signed_up_users?.some(u => u === user.uid) && (
-                    <button className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] transition duration-200 ease-in-out" onClick={() => openRSVPModal(event)}>
-                      RSVP
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">{event.name}</h3>
+                    <div className="flex items-center mb-4">
+                      <FaCalendar className="mr-2" />
+                      <span>{event.date_start}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-4">
+                      {getRandomPeople(3).map((person) => (
+                        <img
+                          key={person.id}
+                          src={person.imageUrl}
+                          alt={`Person ${person.id}`}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ))}
+                      <span>{event.people} Going</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <button
+                      onClick={() => handleMoreInfo(event)}
+                      className="bg-[#1B1A55] text-[#E5E7EB] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
+                    >
+                      More Info
                     </button>
-                  )}
-                  {event.hosted_users?.some(u => u === user.uid) && (
-                    <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
-                      Hosted
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            ))
+                    {!event.hosted_users?.some((u) => u === user.uid) &&
+                      event.signed_up_users?.some((u) => u === user.uid) && (
+                        <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                          RSVP'd
+                        </button>
+                      )}
+                    {!event.hosted_users?.some((u) => u === user.uid) &&
+                      !event.signed_up_users?.some((u) => u === user.uid) && (
+                        <button
+                          className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
+                          onClick={() => openRSVPModal(event)}
+                        >
+                          RSVP
+                        </button>
+                      )}
+                    {event.hosted_users?.some((u) => u === user.uid) && (
+                      <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                        Hosted
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-[#E5E7EB]">
               <p>No events found matching your search criteria.</p>

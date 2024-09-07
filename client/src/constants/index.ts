@@ -288,10 +288,22 @@ const categories = [
 ];
 
 const regions = [
+  { value: "Remote", label: "Remote" },
   { value: "London", label: "London" },
+  { value: "Manchester", label: "Manchester" },
+  { value: "Birmingham", label: "Birmingham" },
+  { value: "Glasgow", label: "Glasgow" },
   { value: "New York", label: "New York" },
+  { value: "San Francisco", label: "San Francisco" },
+  { value: "Washington D.C.", label: "Washington D.C." },
+  { value: "Boston", label: "Boston" },
   { value: "Delhi", label: "Delhi" },
-  { value: "Bangladesh", label: "Bangladesh" },
+  { value: "Mumbai", label: "Mumbai" },
+  { value: "Karachi", label: "Karachi" },
+  { value: "Toronto", label: "Toronto" },
+  { value: "Dhaka", label: "Dhaka" },
+
+
 ];
 
 export { teamMembers, categories, regions };

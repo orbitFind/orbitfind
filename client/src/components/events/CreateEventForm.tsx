@@ -8,6 +8,8 @@ import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/use-toast";
 import { formatDate } from "@/util/input";
+import { regions } from "@/constants";
+import { motion } from 'framer-motion';
 
 const CreateEventForm = () => {
     const [eventName, setEventName] = useState('');
@@ -31,31 +33,21 @@ const CreateEventForm = () => {
         setEventDescription(e.target.value);
     };
 
-    // ! Badges feature is not implemented
-    // const handleEventBadgesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //     setEventBadges([...eventBadges, { badge_id: e.target.value, name: e.target.value }]);
-    // };
-
-    // const handleSelectBadge = (e: React.ChangeEvent<HTMLSelectElement>) => {
-
-    // }
-
-    const handleEventRegionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleEventRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setEventRegion(e.target.value);
     };
-
+    
     const handleEventLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEventLocation(e.target.value);
     };
 
     const handleEventStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const date = new Date(e.target.value);
-        console.log(date.toLocaleString());
         setEventStartDate(date);
     };
 
     const handleEventEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const date = new Date(e.target.value)
+        const date = new Date(e.target.value);
         setEventEndDate(date);
     }
 
@@ -120,26 +112,24 @@ const CreateEventForm = () => {
 
     const renderTags = () => {
         return eventTags.map((tag, index) => (
-            <div key={index} className="inline-block bg-gray-200 rounded-md px-2 py-1 mr-2 mb-2 text-black">
+            <div key={index} className="inline-block bg-[#9290C3] rounded-md px-2 py-1 mr-2 mb-2 text-[#E5E7EB]">
                 <span>{tag}</span>
             </div>
         ));
     };
 
-    // ! Badges feature is not implemented
-    // const renderBadges = () => {
-    //     return eventBadges.map((badge, index) => (
-    //         <div key={index} className="inline-block bg-gray-200 rounded-md px-2 py-1 mr-2 mb-2 text-black">
-    //             <span>{badge.name}</span>
-    //         </div>
-    //     ))
-    // }
-
     return (
-        <form onSubmit={handleSubmit} className="w-10/12 p-8 rounded shadow bg-[#4F8CFF] text-[#E5E7EB] px-4 py-2 rounded-md hover:bg-[#4F8CFF] shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Create Event</h2>
-            <div className="mb-4">
-                <label htmlFor="eventName" className="block text-white-700 font-bold mb-2">
+        <motion.form 
+            onSubmit={handleSubmit} 
+            className="w-full max-w-lg p-8 rounded-lg shadow-lg bg-[#070F2B] text-[#E5E7EB]"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+        >
+            <h2 className="text-3xl font-bold mb-6">Create Event</h2>
+            <div className="mb-5">
+                <label htmlFor="eventName" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Name
                 </label>
                 <Input
@@ -147,59 +137,44 @@ const CreateEventForm = () => {
                     id="eventName"
                     value={eventName}
                     onChange={handleEventNameChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
-            <div className="mb-4">
-                <label htmlFor="eventDescription" className="block text-white-700 font-bold mb-2">
+            <div className="mb-5">
+                <label htmlFor="eventDescription" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Description
                 </label>
                 <textarea
                     id="eventDescription"
                     value={eventDescription}
                     onChange={handleEventDescriptionChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
-            {/* Badges feature is not implemented */}
-            {/* <div className="mb-4"> 
-                <label htmlFor="eventBadges" className="block text-white-700 font-bold mb-2">
-                    Event Badges
-                </label>
-                <div className="flex flex-wrap">
-                    {renderBadges()}
-                </div>
-                <select
-                    id="eventBadges"
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
-                    onChange={handleEventBadgesChange}
-                >
-                    <option value="" key={"placeholder-option"}>Select a badge</option>
-                    <option value={""} key={"create-new-badge"}>+ Create a new badge</option>
-                    {eventBadges.map((badge) => (
-                        <option key={badge.badge_id} value={badge.badge_id}>
-                            {badge.name}
-                        </option>
-                    ))}
-                </select>
-            </div> */}
-            <div className="mb-4">
-                <label htmlFor="eventRegion" className="block text-white-700 font-bold mb-2">
+            <div className="mb-5">
+                <label htmlFor="eventRegion" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Region
                 </label>
-                <Input
-                    type="text"
+                <select
                     id="eventRegion"
                     value={eventRegion}
                     onChange={handleEventRegionChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
-                />
+                >
+                    <option value="" disabled>Select a region</option>
+                    {regions.map((region) => (
+                        <option key={region.value} value={region.value}>
+                            {region.label}
+                        </option>
+                    ))}
+                </select>
             </div>
-            <div className="mb-4">
-                <label htmlFor="eventLocation" className="block text-white-700 font-bold mb-2">
+
+            <div className="mb-5">
+                <label htmlFor="eventLocation" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Location
                 </label>
                 <Input
@@ -207,15 +182,15 @@ const CreateEventForm = () => {
                     id="eventLocation"
                     value={eventLocation}
                     onChange={handleEventLocationChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
-            <div className="mb-4">
-                <label htmlFor="eventTags" className="block text-white-700 font-bold mb-2">
+            <div className="mb-5">
+                <label htmlFor="eventTags" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Tags
                 </label>
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap mb-2">
                     {renderTags()}
                 </div>
                 <Input
@@ -223,12 +198,12 @@ const CreateEventForm = () => {
                     id="eventTags"
                     value={eventTags}
                     onChange={handleEventTagsChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
-            <div className="mb-4">
-                <label htmlFor="eventStartDate" className="block text-white-700 font-bold mb-2">
+            <div className="mb-5">
+                <label htmlFor="eventStartDate" className="block text-[#E5E7EB] font-bold mb-2">
                     Event Start Date
                 </label>
                 <Input
@@ -236,12 +211,12 @@ const CreateEventForm = () => {
                     id="eventStartDate"
                     value={formatDate(eventStartDate)}
                     onChange={handleEventStartDateChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
-            <div className="mb-4">
-                <label htmlFor="eventEndDate" className="block text-white-700 font-bold mb-2">
+            <div className="mb-5">
+                <label htmlFor="eventEndDate" className="block text-[#E5E7EB] font-bold mb-2">
                     Event End Date
                 </label>
                 <Input
@@ -249,21 +224,20 @@ const CreateEventForm = () => {
                     id="eventEndDate"
                     value={formatDate(eventEndDate)}
                     onChange={handleEventEndDateChange}
-                    className="w-full border border-gray-300 rounded py-2 px-3 focus:outline-none focus:border-blue-500"
+                    className="w-full border border-[#535C91] rounded py-2 px-3 focus:outline-none focus:border-[#9290C3]"
                     required
                 />
             </div>
 
             <Button
                 type="submit"
-                className="flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                className="flex items-center justify-center bg-[#4F8CFF] text-[#E5E7EB] py-2 px-4 rounded hover:bg-[#535C91]"
             >
                 <FaSave className="mr-2" />
                 Create
             </Button>
-        </form>
+        </motion.form>
     );
-
 }
 
 export default CreateEventForm;

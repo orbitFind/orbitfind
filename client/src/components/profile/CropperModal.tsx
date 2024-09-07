@@ -14,20 +14,22 @@ const CropperModal: React.FC<CropperModalProps> = (props) => {
     return props.showCropper && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
             <motion.div
-                className="relative bg-[#1B1A55] p-6 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2"
+                className="relative bg-[#1B1A55] p-4 rounded-lg shadow-lg max-w-full max-h-full w-full md:w-11/12 lg:w-2/3 xl:w-1/2 overflow-hidden"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
             >
                 <h2 className="text-2xl text-[#E5E7EB] mb-4">Crop Your Image</h2>
-                <Cropper
-                    src={props.imagePreview}
-                    style={{ height: '100%', width: '100%' }}
-                    aspectRatio={1}
-                    guides={false}
-                    ref={props.cropperRef}
-                    onInitialized={props.handleCropperInit}
-                />
+                <div className="relative w-full h-64 md:h-80 lg:h-96">
+                    <Cropper
+                        src={props.imagePreview}
+                        style={{ height: '100%', width: '100%' }}
+                        aspectRatio={1}
+                        guides={false}
+                        ref={props.cropperRef}
+                        onInitialized={props.handleCropperInit}
+                    />
+                </div>
                 <div className="flex justify-between mt-4">
                     <motion.button
                         onClick={() => props.setShowCropper(false)}
@@ -50,7 +52,7 @@ const CropperModal: React.FC<CropperModalProps> = (props) => {
                 </div>
             </motion.div>
         </div>
-    )
+    );
 }
 
 export default CropperModal;

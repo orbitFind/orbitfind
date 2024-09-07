@@ -7,7 +7,6 @@ const Footer: React.FC = () => {
     <footer className={styles.footer}>
       <div className={styles.footerContent}>
         <div className={styles.footerLinks}>
-          <a href="#" className={styles.footerLink}>Join Waitlist</a>
           <a href="#about" className={styles.footerLink}>About Us</a>
           <a href="#features" className={styles.footerLink}>Features</a>
         </div>
