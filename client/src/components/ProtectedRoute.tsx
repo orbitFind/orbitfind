@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation, Navigate, Outlet } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { getUser } from "@/api/user";
 
 const ProtectedRoute: React.FC = () => {
     const { fetchStatus, authUser } = useSelector(selectAuthUser);
@@ -39,6 +40,8 @@ const ProtectedRoute: React.FC = () => {
                         },
                         token
                     }));
+
+                    dispatch(getUser());
                 } else {
                     localStorage.removeItem('authUser');
                     navigate('/auth');
@@ -58,7 +61,7 @@ const ProtectedRoute: React.FC = () => {
         });
 
         return () => unsubscribe();
-    }, [dispatch, navigate, toast, location.pathname]);
+    }, [location.pathname]);
 
     // Block route rendering while loading auth state
     if (loading || fetchStatus === "loading") {

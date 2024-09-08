@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { FaSearch, FaTimes, FaMapMarkerAlt, FaCalendar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { categories, regions } from "@/constants"; // Assuming events are defined in constants
-import { selectEvents, useAppDispatch } from "@/store/store";
+import { selectEvents, selectUser, useAppDispatch } from "@/store/store";
 import { getAllEvents, RSVPUserInEvent } from "@/api/events";
 import { useSelector } from "react-redux";
 import { Event } from "@/constants/interfaces";
 import ConfirmModal from "@/components/ui/confirmModal";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -18,7 +19,10 @@ const EventsPage = () => {
   const [inputTag, setInputTag] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const navigate = useNavigate();
+
   const { toast } = useToast();
+
 
   // RSVP Component
   const [selectedRSVPEvent, setSelectedRSVPEvent] = useState<Event | null>(
@@ -35,23 +39,26 @@ const EventsPage = () => {
     setRSVPModalOpen(false);
   };
 
-  const authUser = localStorage.getItem("authUser") || null;
-
-  if (!authUser) {
-    console.error("No user is logged in.");
-    return;
-  }
-
-  const { user } = JSON.parse(authUser);
-
   const dispatch = useAppDispatch();
   const { events, fetchStatus } = useSelector(selectEvents);
-  const fetchEvents = async () => {
-    await dispatch(getAllEvents());
+
+  const { user } = useSelector(selectUser);
+
+  const fetchData = async () => {
+    await dispatch(getAllEvents()).catch((error) => {
+      console.error("Error fetching events: ", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while fetching events.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+    });
   };
 
+
   useEffect(() => {
-    fetchEvents();
+    fetchData();
   }, []);
 
   const handleRSVP = () => {
@@ -59,7 +66,7 @@ const EventsPage = () => {
       RSVPUserInEvent({
         ...selectedRSVPEvent!,
         people: (selectedRSVPEvent?.people || 0) + 1,
-        signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user],
+        signed_up_users: [...(selectedRSVPEvent?.signed_up_users || []), user!],
       })
     );
 
@@ -69,11 +76,12 @@ const EventsPage = () => {
       variant: "default",
     });
     closeRSVPModal();
-    fetchEvents();
+    fetchData();
   };
 
   const handleMoreInfo = (event: Event) => {
     setSelectedEvent(event);
+    console.log(event.signed_up_users)
     // setShowPeople(false);
   };
 
@@ -283,73 +291,74 @@ const EventsPage = () => {
 
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
           {fetchStatus === "success" && displayedEvents.filter((event) => event.status !== "completed")
-            .length > 0 ? (
-            displayedEvents
-              .filter((event) => event.status !== "completed")
-              .map((event) => (
-                <motion.div
-                  key={event.event_id}
-                  className="bg-[#E5E7EB] text-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
-                  whileHover={{
-                    scale: 1.02,
-                    backgroundColor: "#1B1A55", // Inverted background
-                    color: "#E5E7EB", // Inverted text color
-                  }}
-                >
-                  {event.status === "ongoing" && (
-                    <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
-                      • LIVE
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{event.name}</h3>
-                    <div className="flex items-center mb-4">
-                      <FaCalendar className="mr-2" />
-                      <span>{event.date_start}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 mb-4">
-                      {getRandomPeople(3).map((person) => (
-                        <img
-                          key={person.id}
-                          src={person.imageUrl}
-                          alt={`Person ${person.id}`}
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ))}
-                      <span>{event.people} Going</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center mt-auto">
-                    <button
-                      onClick={() => handleMoreInfo(event)}
-                      className="bg-[#1B1A55] text-[#E5E7EB] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
-                    >
-                      More Info
-                    </button>
-                    {!event.hosted_users?.some((u) => u === user.uid) &&
-                      event.signed_up_users?.some((u) => u === user.uid) && (
-                        <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
-                          RSVP'd
-                        </button>
-                      )}
-                    {!event.hosted_users?.some((u) => u === user.uid) &&
-                      !event.signed_up_users?.some((u) => u === user.uid) && (
-                        <button
-                          className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
-                          onClick={() => openRSVPModal(event)}
-                        >
-                          RSVP
-                        </button>
-                      )}
-                    {event.hosted_users?.some((u) => u === user.uid) && (
-                      <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
-                        Hosted
-                      </button>
+            .length > 0 && (
+              displayedEvents
+                .filter((event) => event.status !== "completed")
+                .map((event) => (
+                  <motion.div
+                    key={event.event_id}
+                    className="bg-[#E5E7EB] text-[#1B1A55] p-4 rounded-lg shadow-lg flex flex-col h-full"
+                    whileHover={{
+                      scale: 1.02,
+                      backgroundColor: "#1B1A55", // Inverted background
+                      color: "#E5E7EB", // Inverted text color
+                    }}
+                  >
+                    {event.status === "ongoing" && (
+                      <div className="bg-[#FF0000] text-white px-2 py-1 rounded-lg mb-4 font-bold">
+                        • LIVE
+                      </div>
                     )}
-                  </div>
-                </motion.div>
-              ))
-          ) : (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">{event.name}</h3>
+                      <div className="flex items-center mb-4">
+                        <FaCalendar className="mr-2" />
+                        <span>{event.date_start}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        {getRandomPeople(3).map((person) => (
+                          <img
+                            key={person.id}
+                            src={person.imageUrl}
+                            alt={`Person ${person.id}`}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ))}
+                        <span>{event.people} Going</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center mt-auto">
+                      <button
+                        onClick={() => handleMoreInfo(event)}
+                        className="bg-[#1B1A55] text-[#E5E7EB] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
+                      >
+                        More Info
+                      </button>
+                      {!event.hosted_users?.some((u) => u.username === user?.username) &&
+                        event.signed_up_users?.some((u) => u.username === user?.username) && (
+                          <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                            RSVP'd
+                          </button>
+                        )}
+                      {!event.hosted_users?.some((u) => u.username === user?.username) &&
+                        !event.signed_up_users?.some((u) => u.username === user?.username) && (
+                          <button
+                            className="bg-[#9290C3] text-[#1B1A55] py-1 px-3 rounded hover:bg-[#E5E7EB] hover:text-[#1B1A55] transition duration-200 ease-in-out"
+                            onClick={() => openRSVPModal(event)}
+                          >
+                            RSVP
+                          </button>
+                        )}
+                      {event.hosted_users?.some((u) => u.username === user?.username) && (
+                        <button className="bg-[#535C91] text-[#E5E7EB] py-1 px-3 rounded cursor-not-allowed">
+                          Hosted
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                ))
+            )}
+          {fetchStatus === "success" && displayedEvents.filter((event) => event.status !== "completed").length === 0 && (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-[#E5E7EB]">
               <p>No events found matching your search criteria.</p>
             </div>
