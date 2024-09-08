@@ -5,7 +5,7 @@ from models import Badge, User
 from firebase_admin.auth import InvalidIdTokenError, verify_id_token
 
 """
-verify_user(authToken: str, refreshToken: str) -> User
+verify_user(authToken: str) -> User
     Verifies the user's authentication token and returns the user object if the token is valid.
     If the token is invalid, it returns None.
 """

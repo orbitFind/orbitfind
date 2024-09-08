@@ -12,13 +12,12 @@ export const getUser = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken, user } = JSON.parse(authUser);
+      const { token, user } = JSON.parse(authUser);
 
       const response = await api.get(`/users/${user.uid}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          RefreshToken: refreshToken,
         },
       });
 
@@ -45,13 +44,12 @@ export const updateUser = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken, user } = JSON.parse(authUser);
+      const { token, user } = JSON.parse(authUser);
 
       const response = await api.put(`/users/${user.uid}`, userData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          RefreshToken: refreshToken,
         },
       });
       const headers = { ...response.headers };
@@ -71,16 +69,12 @@ export const updateUser = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   "deleteUser",
-  async (
-    { token, refreshToken }: { token: string; refreshToken: string },
-    { rejectWithValue }
-  ) => {
+  async ({ token }: { token: string }, { rejectWithValue }) => {
     try {
       const response = await api.delete("/users/me", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          RefreshToken: refreshToken,
         },
       });
       const headers = { ...response.headers };

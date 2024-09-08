@@ -83,7 +83,7 @@ const CreateEventForm = () => {
             toast({ title: 'Error', description: 'Please log in to create an event', variant: "destructive" });
             navigate('/auth');
         }
-        const { token, refreshToken } = JSON.parse(authUser!);
+        const { token } = JSON.parse(authUser!);
 
         dispatch(createEvent({
             eventData: {
@@ -97,7 +97,7 @@ const CreateEventForm = () => {
                 date_start: eventStartDate.toISOString(),
                 date_end: eventEndDate.toISOString(),
             },
-            token, refreshToken
+            token
         })).then(() => {
             setEventName('');
             setEventDescription('');
