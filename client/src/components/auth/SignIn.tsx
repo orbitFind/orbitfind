@@ -6,6 +6,7 @@ import { motion } from "framer-motion"
 import { authSlice } from '@/store/authSlice';
 import { useAppDispatch } from '@/store/store';
 import { useToast } from '../ui/use-toast';
+import { FirebaseError } from 'firebase/app';
 
 const SignIn = () => {
     const navigate = useNavigate();
@@ -28,8 +29,7 @@ const SignIn = () => {
                 throw new Error('Invalid user object');
             }
 
-            const token = await user.getIdToken();
-            const refreshToken = await user.getIdToken(true);
+            const token = await user.getIdToken(true);
 
             dispatch(setAuthUser({
                 authUser: {
@@ -37,20 +37,21 @@ const SignIn = () => {
                     email: user.email,
                     displayName: user.displayName,
                 },
-                token: token,
-                refreshToken: refreshToken
+                token
             }));
 
-            localStorage.setItem('authUser', JSON.stringify({ user, token, refreshToken }));
+            localStorage.setItem('authUser', JSON.stringify({ user, token }));
 
             toast({ title: 'Sign In', description: 'User signed in successfully', variant: 'default' });
             navigate('/events');
 
         } catch (error) {
-            if (error instanceof Error) {
-                toast({ title: 'Error', description: error.message, variant: 'destructive' });
+            if (error instanceof FirebaseError) {
+                console.error('Error signing in:', error);
+                toast({ title: 'Error', description: "User with that email doesn't exist.", variant: 'destructive' });
             } else {
-                toast({ title: 'Error', description: 'An unknown error has occurred', variant: 'destructive' });
+                console.error('An unknown error has occurred');
+                toast({ title: 'Error', description: 'An unknown error has occurred. Please try again.', variant: 'destructive' });
             }
         }
     };

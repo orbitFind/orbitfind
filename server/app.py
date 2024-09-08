@@ -98,11 +98,10 @@ def get_users():
 @app.route('/users/<string:id>', methods=['GET'])
 def get_user(id):
     try:
-        auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')  # Ensure consistency in header names
+        auth_token = request.headers.get('Authorization')  # Ensure consistency in header names
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify({'error': "Authentication failed"}), 401
@@ -174,10 +173,9 @@ def get_user(id):
 def update_user(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify({'error': "Authentication failed"}), 401
@@ -230,10 +228,9 @@ def update_user(id):
 def delete_user(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify({'error': 'Authentication failed'}), 401
@@ -262,10 +259,9 @@ def delete_user(id):
 def create_event():
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify("Authentication failed"), 401
@@ -310,10 +306,9 @@ def create_event():
 def update_event(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify("Authentication failed"), 401
@@ -380,10 +375,9 @@ def update_event(id):
 def rsvp_event(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify("Authentication failed"), 401
@@ -409,10 +403,9 @@ def rsvp_event(id):
 def end_event(id):
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if user is None:
             return jsonify("Authentication failed"), 401
@@ -450,10 +443,9 @@ def end_event(id):
 def get_events():
     try:
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify("Authentication failed"), 401
@@ -472,8 +464,8 @@ def get_events():
                 'location': event.location,
                 'tags': event.tags,
                 'status': event.status,
-                'hosted_users': [host.user_id for host in event.hosted_users],
-                'signed_up_users': [user.user_id for user in event.signed_up_users],
+                'hosted_users': [host.to_dict() for host in event.hosted_users],
+                'signed_up_users': [user.to_dict() for user in event.signed_up_users],
             } for event in events]
             ), 200
     except Exception as e:
@@ -482,11 +474,10 @@ def get_events():
 @app.route('/events/hosted', methods=['GET'])
 def get_hosted_events():
     try:
-        auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('RefreshToken')  # Ensure consistency in header names
+        auth_token = request.headers.get('Authorization')  # Ensure consistency in header names
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify({'error': 'Authentication failed'}), 401
@@ -528,10 +519,9 @@ def get_hosted_events():
 def get_event(id):
     try: 
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify the user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify('Authentication failed'), 401
@@ -550,10 +540,9 @@ def delete_event(id):
     try:
         print("Deleting event: " + str(id))
         auth_token = request.headers.get('Authorization')
-        refresh_token = request.headers.get('Refreshtoken')
 
         # Verify user
-        user = verify_user(auth_token, refresh_token, app.config['FIREBASE_WEB_API_KEY'])
+        user = verify_user(auth_token)
 
         if not user:
             return jsonify('Authentication failed'), 401

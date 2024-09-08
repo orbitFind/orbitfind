@@ -34,8 +34,7 @@ const SignUp = () => {
                 throw new Error('Invalid user object');
             }
 
-            const token = await user.getIdToken();
-            const refreshToken = await user.getIdToken(true);
+            const token = await user.getIdToken(true)
 
             dispatch(setAuthUser({
                 authUser: {
@@ -43,11 +42,10 @@ const SignUp = () => {
                     email: user.email,
                     displayName: user.displayName,
                 },
-                token,
-                refreshToken
+                token
             }));
 
-            localStorage.setItem('authUser', JSON.stringify({ user, token, refreshToken }));
+            localStorage.setItem('authUser', JSON.stringify({ user, token }));
 
             setEmail('');
             setPassword('');

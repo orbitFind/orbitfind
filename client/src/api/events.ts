@@ -11,13 +11,12 @@ export const getAllEvents = createAsyncThunk(
       if (!authUser) {
         return rejectWithValue("No user is logged in.");
       }
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.get(`/events`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          Refreshtoken: refreshToken,
         },
       });
 
@@ -44,13 +43,12 @@ export const getHostedEvents = createAsyncThunk(
       if (!authUser) {
         return rejectWithValue("No user is logged in.");
       }
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.get(`/events/hosted`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          Refreshtoken: refreshToken,
         },
       });
 
@@ -72,11 +70,7 @@ export const getHostedEvents = createAsyncThunk(
 export const createEvent = createAsyncThunk(
   "events/createEvent",
   async (
-    {
-      eventData,
-      token,
-      refreshToken,
-    }: { eventData: EventCreate; token: string; refreshToken: string },
+    { eventData, token }: { eventData: EventCreate; token: string },
     { rejectWithValue }
   ) => {
     try {
@@ -92,7 +86,6 @@ export const createEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            RefreshToken: refreshToken,
           },
         }
       );
@@ -123,7 +116,7 @@ export const updateEvent = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.put(
         `/events/${updateData.event_id}`,
@@ -132,7 +125,6 @@ export const updateEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            RefreshToken: refreshToken,
           },
         }
       );
@@ -162,7 +154,7 @@ export const RSVPUserInEvent = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.put(
         `/events/${updateData.event_id}/rsvp`,
@@ -173,7 +165,6 @@ export const RSVPUserInEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            RefreshToken: refreshToken,
           },
         }
       );
@@ -203,7 +194,7 @@ export const endEvent = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.put(
         `/events/${event_id}/end`,
@@ -212,7 +203,6 @@ export const endEvent = createAsyncThunk(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            RefreshToken: refreshToken,
           },
         }
       );
@@ -242,13 +232,12 @@ export const deleteEvent = createAsyncThunk(
         return rejectWithValue("No user is logged in.");
       }
 
-      const { token, refreshToken } = JSON.parse(authUser);
+      const { token } = JSON.parse(authUser);
 
       const response = await api.delete(`/events/${event_id}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          RefreshToken: refreshToken,
         },
       });
 

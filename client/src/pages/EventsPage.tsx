@@ -27,7 +27,6 @@ const EventsPage = () => {
   const [RSVPModalOpen, setRSVPModalOpen] = useState<boolean>(false);
 
   const openRSVPModal = (event: Event) => {
-    console.log(event.signed_up_users);
     setSelectedRSVPEvent(event);
     setRSVPModalOpen(true);
   };
@@ -73,7 +72,7 @@ const EventsPage = () => {
     fetchEvents();
   };
 
-  const handleMoreInfo = (event: any) => {
+  const handleMoreInfo = (event: Event) => {
     setSelectedEvent(event);
     // setShowPeople(false);
   };
@@ -382,6 +381,12 @@ const EventsPage = () => {
               <h2 className="text-2xl font-semibold text-[#E5E7EB] mb-4">
                 {selectedEvent.name}
               </h2>
+              <p className="text-[#E5E7EB] mb-4">
+                <strong>Hosted by{" "}
+                  {selectedEvent.hosted_users?.map((u) => (
+                    <span key={u.username}>{u.username}</span>
+                  ))}</strong>
+              </p>
               <p className="text-[#E5E7EB] mb-4">{selectedEvent.description}</p>
 
               {/* Location */}
@@ -392,7 +397,7 @@ const EventsPage = () => {
 
               {/* Tags */}
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-[#E5E7EB]">Tags</h3>
+                <h3 className="text-lg font-semibold text-[#E5E7EB] mb-3">Tags</h3>
                 <div className="flex flex-wrap space-x-2">
                   {selectedEvent.tags.map((tag: string, index: number) => (
                     <span

@@ -27,7 +27,6 @@ export interface AuthUser {
 export interface AuthState {
   authUser: AuthUser | null;
   token: string | null;
-  refreshToken: string | null;
   fetchStatus: "success" | "loading" | "error" | null;
 }
 

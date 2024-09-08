@@ -6,7 +6,6 @@ export const authSlice = createSlice({
   initialState: {
     authUser: null,
     token: null,
-    refreshToken: null,
     fetchStatus: null,
   } as AuthState,
   reducers: {
@@ -15,16 +14,14 @@ export const authSlice = createSlice({
       action: PayloadAction<{
         authUser: AuthUser;
         token: string;
-        refreshToken: string;
       }>
     ) {
-      const { authUser, token, refreshToken } = action.payload;
+      const { authUser, token } = action.payload;
       state.fetchStatus = "loading";
       state.authUser = authUser;
       state.token = token;
-      state.refreshToken = refreshToken;
 
-      if (authUser && token && refreshToken) {
+      if (authUser && token) {
         state.fetchStatus = "success";
       } else {
         state.fetchStatus = "error";
@@ -32,6 +29,8 @@ export const authSlice = createSlice({
     },
     clearAuthUser(state) {
       state.authUser = null;
+      state.token = null;
+      state.fetchStatus = null;
     },
   },
 });
